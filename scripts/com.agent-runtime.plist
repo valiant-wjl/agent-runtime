@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.agent-runtime</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>{{REPO_ROOT}}/scripts/run.sh</string>
+        <string>--config</string>
+        <string>{{REPO_ROOT}}/config.yaml</string>
+    </array>
+
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+
+    <key>StandardOutPath</key>
+    <string>{{REPO_ROOT}}/log/launchd.out.log</string>
+    <key>StandardErrorPath</key>
+    <string>{{REPO_ROOT}}/log/launchd.err.log</string>
+
+    <key>WorkingDirectory</key>
+    <string>{{REPO_ROOT}}</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <!-- launchd default PATH is /usr/bin:/bin:/usr/sbin:/sbin and misses
+             homebrew + user bins, so the runtime cannot spawn lark-cli /
+             claude / jq. Mirror the systemd unit's PATH (plus /opt/homebrew).
+             `claude` lives under the nvm node dir (a version-specific path that
+             is NOT on this PATH); install-service.sh resolves it and creates a
+             version-agnostic symlink {{HOME}}/.local/bin/claude so node upgrades
+             do not break resolution. Do NOT hardcode an nvm version segment
+             here — that drifts and breaks on node upgrade (FileNotFoundError:
+             'claude'). -->
+        <key>PATH</key><string>/opt/homebrew/bin:{{HOME}}/bin:{{HOME}}/.local/bin:{{HOME}}/.npm-global/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+        <key>NO_PROXY</key><string>*</string>
+        <key>no_proxy</key><string>*</string>
+        <key>http_proxy</key><string></string>
+        <key>https_proxy</key><string></string>
+        <key>HTTP_PROXY</key><string></string>
+        <key>HTTPS_PROXY</key><string></string>
+    </dict>
+</dict>
+</plist>

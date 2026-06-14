@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.agent-runtime.ingest-feishu</string>
+
+    <!-- Hourly Feishu ingest. macOS launchd alternative to the cron entry in
+         install-cron.sh (macOS cron is deprecated and needs Full Disk Access).
+         Rendered + loaded by scripts/install-timers-macos.sh. -->
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>{{REPO_ROOT}}/scripts/ingest_feishu.sh</string>
+    </array>
+
+    <!-- Top of every hour. -->
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Minute</key><integer>0</integer>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>{{REPO_ROOT}}/log/cron-ingest_feishu.log</string>
+    <key>StandardErrorPath</key>
+    <string>{{REPO_ROOT}}/log/cron-ingest_feishu.log</string>
+
+    <key>WorkingDirectory</key>
+    <string>{{REPO_ROOT}}</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <!-- launchd default PATH misses homebrew + user bins, so the job cannot
+             spawn lark-cli / jq. Mirror the service plist PATH; `claude` is not
+             needed here. The ingest script itself probes for a PyYAML python. -->
+        <key>PATH</key><string>/opt/homebrew/bin:{{HOME}}/bin:{{HOME}}/.local/bin:{{HOME}}/.npm-global/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+        <key>NO_PROXY</key><string>*</string>
+        <key>no_proxy</key><string>*</string>
+        <key>http_proxy</key><string></string>
+        <key>https_proxy</key><string></string>
+        <key>HTTP_PROXY</key><string></string>
+        <key>HTTPS_PROXY</key><string></string>
+    </dict>
+</dict>
+</plist>

@@ -1,0 +1,31 @@
+[Unit]
+Description=agent-runtime (Feishu Claude Max framework)
+Documentation=https://github.com/valiant-wjl/agent-runtime
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory={{REPO_ROOT}}
+ExecStart=/bin/bash {{REPO_ROOT}}/scripts/run.sh --config {{REPO_ROOT}}/config.yaml
+Restart=on-failure
+RestartSec=5
+StandardOutput=append:{{REPO_ROOT}}/log/systemd.out.log
+StandardError=append:{{REPO_ROOT}}/log/systemd.err.log
+
+# Optional secrets file (lark-mcp / codebase-mcp tokens etc.)
+EnvironmentFile=-{{HOME}}/.claude-dotfiles.secrets.env
+
+# Proxy bypass per project CLAUDE.md
+Environment=NO_PROXY=*
+Environment=no_proxy=*
+Environment=http_proxy=
+Environment=https_proxy=
+Environment=HTTP_PROXY=
+Environment=HTTPS_PROXY=
+
+# PATH must include user-local bins (jq, claude, etc.)
+Environment=PATH={{HOME}}/bin:{{HOME}}/.local/bin:{{HOME}}/.npm-global/bin:/usr/local/bin:/usr/bin:/bin
+
+[Install]
+WantedBy=default.target
