@@ -16,10 +16,10 @@ import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
-# Allow `from runtime.claude_proc import run as claude_run` from this script.
+# Allow `from agent_runtime.claude_proc import run as claude_run` from this script.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from runtime.claude_proc import run as claude_run  # noqa: E402
-from runtime.claude_proc import RunResult  # noqa: E402
+from agent_runtime.claude_proc import run as claude_run  # noqa: E402
+from agent_runtime.claude_proc import RunResult  # noqa: E402
 
 log = logging.getLogger(__name__)
 

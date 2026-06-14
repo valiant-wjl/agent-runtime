@@ -618,7 +618,7 @@ render_one() {
     fi
     PYTHONPATH="$REPO_ROOT" KV_INPUT="$kv_lines" python3 - "$template" "$output" "$DRY_RUN" <<'PY'
 import base64, os, sys, pathlib
-from runtime.template_render import render_template, TemplateError
+from agent_runtime.template_render import render_template, TemplateError
 
 template, output, dry = sys.argv[1], sys.argv[2], sys.argv[3]
 ctx = {}

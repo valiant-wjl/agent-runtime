@@ -66,13 +66,14 @@ so the test passes again.
 - **Purpose**: Current OKR / active projects / no-go zones — refreshed periodically. The "what is now" reference the agent loads at every conversation.
 - **Owner**: maintainer
 - **Last logged commit**: `3e9fb051d3b64f35057ef878c813a463aa92d2e2`
-- **Last logged sha256**: `975985010b327b6796ded0348b5e63a2e1dfcfb526e082eef114c914d3fc5adf`
+- **Last logged sha256**: `164f0baa0bb4c19054c145a15ef3206d86b5041c1cdde8e15aa7b3150045779d`
 
 ### Change history
 
 | Commit | Date | Summary | Impact observed |
 |---|---|---|---|
 | `130c0df` | 2026-04-24 | M3-T01 baseline (initial) | Baseline |
+| (open-source) | 2026-06-14 | Genericize role/routing examples for public template | Placeholder content only |
 | `3e9fb05` | 2026-05-05 | Describe approval mechanism without literal token | Avoids accidental triggers of approval flow during agent self-description |
 
 ---

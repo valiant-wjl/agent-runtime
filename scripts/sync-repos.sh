@@ -8,7 +8,7 @@ cd "$(dirname "$0")/.."
 python3 -c "
 import asyncio
 import sys
-from runtime import config as cfg_mod, repo_sync
+from agent_runtime import config as cfg_mod, repo_sync
 from pathlib import Path
 
 cfg = cfg_mod.load_config('config.yaml')

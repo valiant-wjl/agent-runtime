@@ -205,25 +205,36 @@ def _build_args(
 
 
 def _build_env() -> dict[str, str]:
-    """Build env for claude subprocess: inherit os.environ but clear proxy.
+    """Build env for the claude subprocess.
 
-    Per CLAUDE.md: must simultaneously unset proxy vars AND set NO_PROXY='*'.
-    Just setting NO_PROXY is insufficient — some HTTP libs see both
-    http_proxy and NO_PROXY='*' and behavior is inconsistent.
+    Proxy handling (default ON): the subprocess inherits ``os.environ`` but
+    has all proxy vars stripped and ``NO_PROXY='*'`` forced, so the CLI talks
+    to the model endpoint directly. This suits hosts that reach the endpoint
+    directly; just setting NO_PROXY is insufficient because some HTTP libs see
+    both ``http_proxy`` and ``NO_PROXY='*'`` and behave inconsistently, so the
+    vars are unset as well.
 
-    TZ is pinned to Asia/Shanghai so any timestamp the agent produces in
-    its reply (or reads via ``date`` / file mtimes) is Beijing time,
-    matching what the user saw on their clock when they sent the
-    message. Hosts often run UTC; without this the agent would answer
-    "现在是 09:00" when it's actually 17:00 in Beijing.
+    If your host needs an outbound proxy to reach the model endpoint, set
+    ``AGENT_RUNTIME_KEEP_PROXY=1`` to inherit the proxy env unchanged.
+
+    TZ defaults to ``Asia/Shanghai`` so any timestamp the agent emits (in its
+    reply, or via ``date`` / file mtimes) matches the user's wall clock; hosts
+    often run UTC. Override with ``AGENT_RUNTIME_TZ`` (empty string = inherit).
     """
-    env = {
-        k: v for k, v in os.environ.items()
-        if k not in {"http_proxy", "https_proxy", "HTTP_PROXY", "HTTPS_PROXY"}
-    }
-    env["NO_PROXY"] = "*"
-    env["no_proxy"] = "*"
-    env["TZ"] = "Asia/Shanghai"
+    keep_proxy = os.environ.get("AGENT_RUNTIME_KEEP_PROXY", "").strip().lower() in {"1", "true", "yes"}
+    if keep_proxy:
+        env = dict(os.environ)
+    else:
+        env = {
+            k: v for k, v in os.environ.items()
+            if k not in {"http_proxy", "https_proxy", "HTTP_PROXY", "HTTPS_PROXY"}
+        }
+        env["NO_PROXY"] = "*"
+        env["no_proxy"] = "*"
+
+    tz = os.environ.get("AGENT_RUNTIME_TZ", "Asia/Shanghai")
+    if tz:
+        env["TZ"] = tz
     return env
 
 

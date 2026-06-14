@@ -32,8 +32,8 @@ from pathlib import Path
 # Make repo root importable when run as `python3 scripts/e2e_self_test.py`
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from channels import ParsedMsg  # noqa: E402
-from runtime import config as config_mod, scheduler, session  # noqa: E402
+from agent_runtime.channels import ParsedMsg  # noqa: E402
+from agent_runtime import config as config_mod, scheduler, session  # noqa: E402
 
 
 class CaptureChannel:
