@@ -11,11 +11,11 @@ from importlib import import_module
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from channels import ChannelAdapter
+    from agent_runtime.channels import ChannelAdapter
 
 # Static mapping of channel name -> module path containing a Channel class.
 _STATIC_CHANNELS: dict[str, str] = {
-    "feishu": "channels.feishu.adapter",
+    "feishu": "agent_runtime.channels.feishu.adapter",
 }
 
 

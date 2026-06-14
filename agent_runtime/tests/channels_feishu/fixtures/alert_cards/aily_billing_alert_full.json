@@ -1,0 +1,29 @@
+{
+  "code": 0,
+  "data": {
+    "items": [
+      {
+        "body": {
+          "content": "{\"title\":\"Aily商业化报警通知\",\"elements\":[[{\"tag\":\"text\",\"text\":\"问题场景：\"},{\"tag\":\"text\",\"text\":\"\\n    权益用量变更\"},{\"tag\":\"text\",\"text\":\"环境：\"},{\"tag\":\"text\",\"text\":\"\\n    online\"}],[{\"tag\":\"text\",\"text\":\"aPaaS租户ID：\"},{\"tag\":\"text\",\"text\":\"\\n    409336\"},{\"tag\":\"text\",\"text\":\"飞书租户ID：\"},{\"tag\":\"text\",\"text\":\"\\n    7386910745609748482\"}],[{\"tag\":\"text\",\"text\":\"错误描述：\"},{\"tag\":\"text\",\"text\":\"\\n    同步权益用量失败\"}],[{\"tag\":\"text\",\"text\":\"日志ID：\"},{\"tag\":\"text\",\"text\":\"\\n    20260509085655ADB1825F923BE83E1F37\"}],[{\"tag\":\"text\",\"text\":\"附加信息：\"},{\"tag\":\"text\",\"text\":\"\\n    {\\\"ID\\\":0,\\\"Usage\\\":\\\"0.02\\\",\\\"EntitlementType\\\":\\\"AILY_RUN\\\",\\\"Status\\\":\\\"\\\",\\\"BillDetail\\\":{\\\"BillID\\\":0,\\\"Usage\\\":\\\"0.02\\\",\\\"UsageDetail\\\":{\\\"TotalUsage\\\":\\\"0.02\\\",\\\"BasicExecutionUsage\\\":\\\"0\\\",\\\"ModelUsage\\\":\\\"0\\\",\\\"AIToolUsage\\\":\\\"0\\\",\\\"ASRUsage\\\":\\\"0\\\",\\\"IDPUsage\\\":\\\"0\\\",\\\"KnowledgeAskUsage\\\":\\\"0\\\",\\\"WorkflowAgentUsage\\\":\\\"0\\\",\\\"ImgGenUsage\\\":\\\"0\\\",\\\"OCRUsage\\\":\\\"0\\\",\\\"InternetSearchUsage\\\":\\\"0\\\",\\\"KnowledgeSearchUsage\\\":\\\"0\\\"},\\\"EntitlementType\\\":\\\"AILY_RUN\\\",\\\"BillingRuleID\\\":0,\\\"BillingItems\\\":[],\\\"TenantID\\\":409336,\\\"AppID\\\":\\\"app_4jk6r1pagsxar\\\",\\\"UserID\\\":null},\\\"BillingEventType\\\":\\\"Spark\\\",\\\"BillingEventID\\\":\\\"2579e1182d9e7199bf4215be99578f6dc6f1d6ce20f0f28d7ed8f97489365257\\\",\\\"BillingSource\\\":\\\"Spark\\\",\\\"BillingSubSource\\\":\\\"\\\",\\\"BillingGroupID\\\":\\\"\\\",\\\"TenantID\\\":409336,\\\"AppID\\\":\\\"app_4jk6r1pagsxar\\\",\\\"UserID\\\":null,\\\"LarkUserID\\\":7600595312641657821,\\\"BillingTaskName\\\":\\\"\\\"}\"}],[{\"tag\":\"hr\"}],[{\"tag\":\"text\",\"text\":\"错误详情：\"},{\"tag\":\"text\",\"text\":\"\\n    invalid connection; invalid connection\"}]]}"
+        },
+        "chat_id": "oc_69f78445121b455087b4e9676da320ef",
+        "create_time": "1778288225802",
+        "deleted": false,
+        "message_id": "om_x100b50dc28d6a4a0c3b5d74ee8dcddc",
+        "message_position": "29351",
+        "msg_type": "interactive",
+        "sender": {
+          "id": "cli_c08abc1da138d00f",
+          "id_type": "app_id",
+          "sender_type": "app",
+          "tenant_key": "736588c9260f175d"
+        },
+        "thread_id": "omt_1a9b0ea8948f1b97",
+        "thread_message_position": "-1",
+        "update_time": "1778297421283",
+        "updated": true
+      }
+    ]
+  },
+  "msg": "success"
+}

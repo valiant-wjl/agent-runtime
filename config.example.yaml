@@ -1,0 +1,123 @@
+version: 1
+
+channels:
+  feishu:
+    enabled: true
+    lark_cli: lark-cli
+    event_types: im.message.receive_v1
+    bot_mention_key: "ou_REPLACE_ME"
+    stream_card:
+      enabled: true
+      throttle_ms: 1000                # 保守默认, M6 PoC 后调
+      throttle_tool_calls: 3
+  feishu_user_account:                 # 占位, MVP 不启用
+    enabled: false
+  slack:
+    enabled: false
+  cli:
+    enabled: false
+
+paths:
+  # SOUL.md + USER.md here are injected as each bot's system prompt
+  # (--append-system-prompt) at every turn. The bot's cwd is the project
+  # work_dir (a sibling of meta), which Claude Code never auto-loads, so this
+  # is the ONLY path by which the persona/style contract reaches the model.
+  # The runtime stamps this onto every project_cfg as `meta_work_dir`.
+  meta_work_dir: /Users/REPLACE_ME/work/agent-repos/meta
+
+projects:
+  billing:
+    work_dir: /Users/REPLACE_ME/work/agent-repos/billing
+    display_name: BillingBot
+    model: opus
+    # routing_keywords: case-insensitive substring match on message text.
+    # Avoid ambiguous Chinese like '计费' (会误命中 '计费用品'); prefer unique identifiers.
+    routing_keywords: [billing, 计费, entitlement]
+    chat_ids: []
+    admin_users: ["ou_REPLACE_ME"]
+    approval_timeout: 1800
+    read_phase:
+      disallowed_tools: [Edit, Write, NotebookEdit]
+      # Platform writes (TCC/RDS/TCE, publish.sh) are NOT gated here: they have
+      # their own downstream control (BOE = auto sandbox, PROD = lark-devops SSO
+      # manual approval), so the bot runs them directly. Only writes with no
+      # downstream gate require the approval block.
+      disallowed_bash_patterns:
+        - "git push"
+    write_phase:
+      timeout: 600
+    # 新增 image 后默认接受图片消息（走 lark-cli 下载 + Claude Read 多模态）。
+    # 仍想拒图就把列表改回 [text, post]。
+    supported_msg_types: [text, post, image]
+    unsupported_msg_reply: "暂不支持该类型消息, 请用文字或图片描述问题"
+    # 图片下载上限（字节，默认 10 MB）；超过该尺寸落下载失败标记不阻塞回复。
+    # image_max_bytes: 10000000
+    # 话题群（chat_mode=thread）首次命中时拉多少条历史塞进 prompt（默认 20）。
+    # 后续轮次走 --resume 不再重复拉。
+    # topic_history_limit: 20
+
+runtime:
+  max_concurrent: 5
+  per_chat_concurrent: 2
+  reply_timeout: 900   # deep 任务（拉真值+多文件确认+改配置）22+ tool 时 300s 不够，会被硬超时 kill
+  dedup_window: 300
+  session_max_age: 86400
+  # Paths below are resolved relative to runtime cwd.
+  # launchd unit sets WorkingDirectory; if running locally via run.sh, cd to repo root first.
+  session_file: ./.state/sessions.json
+  approval_state_file: ./.state/approval_state.json
+  status_file: ./.state/status.json
+  status_history_file: ./.state/status-history.jsonl
+  log_file: ./log/runtime.log
+  # /agent alert register|remove rewrites config.yaml in place; before
+  # each rewrite a timestamped copy is dropped here. Latest 5 retained.
+  config_backup_dir: ./.state/config_baks
+  repo_sync:
+    enabled: true
+    interval_seconds: 3600
+  # Periodically fold accumulated /lesson corrections (knowledge/lessons.md)
+  # into the curated persona (meta/SOUL.md) via a read-only LLM rewrite, then
+  # reset lessons.md. Keeps lessons.md short and SOUL the single source.
+  # Guardrails: old SOUL backed up (SOUL.md.bak.<ts>), output validated before
+  # write, lessons preserved on failure, user notified (push_to_self) each run.
+  lesson_distill:
+    enabled: true
+    interval_seconds: 86400   # daily
+    min_lessons: 3            # only distill once >= N entries accumulated
+    # model: haiku            # optional; defaults to the CLI default model
+  reconnect:
+    max_retries: -1
+    backoff_base: 2
+    backoff_max: 60
+
+features:
+  verifier:
+    enabled: true
+    max_revise_rounds: 2
+    cost_cap:
+      daily_trigger_limit: 200
+      per_chat_trigger_limit: 30
+    parallel_mode: false
+
+ingest:
+  feishu_docs:
+    enabled: false                      # bootstrap 时勾选空间再开
+    interval_seconds: 86400
+    target_dir: meta/raw/feishu-docs/
+    source_spaces: []
+  mr_notes:
+    enabled: false
+    interval_seconds: 86400
+    gitlab_user: ""
+    target_dir: meta/raw/mr-notes/
+
+backup:
+  meta_remote: ""                       # 必须 private git remote, bootstrap 校验
+  cron_time: "02:00"
+
+# Trace emission for digital-agent-observer (Phase A spec).
+# Spans land at trace_dir/YYYY-MM.jsonl in OTel JSON shape.
+observability:
+  enabled: true
+  trace_dir: ./.state/traces
+  retention_months: 6

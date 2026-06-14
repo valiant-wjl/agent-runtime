@@ -28,6 +28,10 @@ agent-runtime = "agent_runtime.scheduler:main"
 where = ["."]
 include = ["agent_runtime*"]
 
+[tool.setuptools.package-data]
+# fleet-mcp.json ships next to claude_proc.py and is resolved module-relative.
+agent_runtime = ["*.json"]
+
 [tool.pytest.ini_options]
 testpaths = ["agent_runtime/tests"]
 asyncio_mode = "auto"

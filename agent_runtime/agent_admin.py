@@ -474,7 +474,7 @@ def _reload_cfg_in_place(ctx: SchedulerContext, cfg: dict) -> None:
     switch to a deep merge here — but that breaks identity for any
     consumer that compared by `is`.
     """
-    from runtime.config import load_config
+    from agent_runtime.config import load_config
     new_cfg = load_config(ctx.config_path)
     cfg.clear()
     cfg.update(new_cfg)

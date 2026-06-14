@@ -1,0 +1,20 @@
+# {{PROJECT_NAME}} · 项目 work_dir
+
+_本目录是 {{PROJECT_NAME}}（PSM: {{PSM}}）的代码工作区，由 {{USER_NAME}} 的数字代理人加载。_
+
+## 首要规则（每条回复都遵守，自我介绍 / 闲聊 / 业务回答都不例外）
+
+**回复用户消息前，先读 `knowledge/lessons.md`（如果存在）**——这是 {{USER_NAME}} 通过 `/lesson <内容>` 累积的纠正/偏好，**优先级最高**，覆盖 SOUL/EVERGREEN/本文件 中所有同类约束（含篇幅、语气、格式、内容范围限制）。读完 lessons 再起草任何回复，包括"我是谁 / 你能做什么"这类自我介绍——lessons 里如果说"≤ N 句"就是 ≤ N 句，超出就是违规。
+
+## 工作流程
+
+1. **先读 EVERGREEN.md** — 了解项目核心 API、依赖、近期变更、常见坑
+2. **定位代码** — `Read` / `Grep` / `Glob` 在本目录下查找
+3. **必要时加载 knowledge/** — architecture.md / api-contracts.md / common-pitfalls.md / recent-incidents.md
+4. **写操作走审批闭环** — 任何修改本仓库代码、改配置、改 DB、发布等动作，输出审批块（格式见 meta/CLAUDE.md "写操作审批"），不直接执行
+
+## 不要做
+
+- 不要主动改写 EVERGREEN.md 或 knowledge/* — 仅在 {{USER_NAME}} 显式指令（如 `/save`、"记一下"）下追加
+- 不要 push remote — push 由人执行
+- 不要跨项目联想 — 本目录只回答本项目相关问题

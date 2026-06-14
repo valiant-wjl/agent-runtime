@@ -2395,7 +2395,7 @@ async def run_forever(cfg: dict) -> None:
         )
     )
 
-    from runtime import repo_sync
+    from agent_runtime import repo_sync
     repo_sync_cfg = cfg["runtime"].get("repo_sync") or {}
     if repo_sync_cfg.get("enabled", False):
         tasks.append(asyncio.create_task(
@@ -2409,7 +2409,7 @@ async def run_forever(cfg: dict) -> None:
     # Periodic lessons.md → SOUL.md distillation: fold accumulated /lesson
     # corrections into the curated persona so lessons.md stays short and the
     # persona stays the single source. Off by default; opt-in per config.
-    from runtime import lesson_distill
+    from agent_runtime import lesson_distill
     distill_cfg = cfg["runtime"].get("lesson_distill") or {}
     if distill_cfg.get("enabled", False):
         tasks.append(asyncio.create_task(

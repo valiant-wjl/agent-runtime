@@ -1,0 +1,24 @@
+# Meta 工作指南（Claude 自读）
+
+_本文件给 Claude 看，说明在 {{USER_NAME}} 的 meta/ 目录里如何处理常见写入操作。_
+
+## Slash Commands 触发条件
+
+### /compile-wiki
+- 条件: raw/ 下新 feishu-docs / MR / Argos 比 `.state/last_compile_at` 更新；或手动触发
+- 前置: `git status meta/wiki/` 必须干净；脏则暂停并提示先 commit
+- 行为: 扫 raw/ → 识别实体 → 冲突检测 → UPDATE/CREATE/SKIP → 刷 EVERGREEN 近 14 天 → 输出 diff summary
+- 跳过: 任何 frontmatter 含 `manual_edits_locked: true` 的 wiki 页
+
+### /save
+- 条件: 对话中出现长期事实（决策/偏好/事件），{{USER_NAME}} 说 "记一下" / "save"
+- 行为: 自检敏感信息 → 交互确认 → redact → 写 MEMORY.md + 记审计链到 raw/INDEX.md
+
+### /evergreen-refresh
+- 条件: 定时（每天）或手动；超 14 天事件需轮转
+- 行为: 只刷 EVERGREEN.md 的 "近 14 天重要事件" 章节；超期条目 rotate 到 wiki/changelog.md
+
+## 写操作边界
+- wiki/、EVERGREEN.md、MEMORY.md → 上述命令可写
+- USER.md、SOUL.md → .claude/settings.json deny（只许人工改）
+- 外部 project work_dir → 走审批闭环（格式见 meta/CLAUDE.md "写操作审批"）
