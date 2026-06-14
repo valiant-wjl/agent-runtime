@@ -1,5 +1,7 @@
 # agent-runtime
 
+**English** | [中文](README.zh-CN.md)
+
 A turn-by-turn **digital agent runtime** that wires an IM channel (e.g. Feishu/Lark)
 to a Claude CLI backend, with a verification loop, human-approval gating, multi-project
 routing, and OpenTelemetry tracing built in.
@@ -10,18 +12,23 @@ verify the draft → send (or ask for approval first) → emit a trace span for 
 
 ## How it works
 
-```
-IM event ─▶ channel adapter ─▶ scheduler ─▶ Claude CLI (claude_proc)
-                                   │                │
-                                   │           draft answer
-                                   │                ▼
-                                   │           verifier (should_trigger? → verify loop)
-                                   │                │
-                                   ▼                ▼
-                            approval gate ◀── final answer ──▶ channel reply
-                                   │
-                                   ▼
-                          OTel span per turn (file + optional OTLP)
+```mermaid
+flowchart TB
+    EV["IM 消息事件<br/>Feishu / Lark / …"] --> CH["Channel Adapter<br/>agent_runtime/channels/<br/>归一化为 ParsedMsg"]
+    CH --> SCH["Scheduler · scheduler.py<br/>去重 · 路由 · 会话状态"]
+    SCH --> CP["claude_proc.py<br/>fork claude CLI<br/>注入 persona · 分阶段限权"]
+    CP --> DRAFT{{"草稿答复 draft"}}
+    DRAFT --> VER["Verifier · verifier.py<br/>should_trigger? → 校验循环<br/>带成本预算"]
+    VER --> APPR{"含无下游兜底的写操作?"}
+    APPR -- "是" --> GATE["Approval gate · approval.py<br/>人工确认状态机"]
+    APPR -- "否" --> REPLY["Channel reply 回复"]
+    GATE --> REPLY
+    CP -.-> OBS["Observability · observability.py<br/>每轮 1 个 OTel span"]
+    VER -.-> OBS
+    REPLY -.-> OBS
+    OBS --> JSONL["traces/YYYY-MM.jsonl"]
+    OBS -. "AGENT_RUNTIME_OTLP_*(可选)" .-> OTLP["OTLP/HTTP collector"]
+    JSONL -. "带外消费 out-of-band" .-> JUDGE["agent-judge(独立仓)"]
 ```
 
 1. **Channel adapter** polls/receives IM events and normalizes them (`agent_runtime/channels/`).
