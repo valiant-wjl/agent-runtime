@@ -1,24 +1,24 @@
-"""Verifier orchestration (M7).
+"""Verifier orchestration.
 
 Two-layer design:
 
 1. **Trigger rules** (pure, sync): :func:`should_trigger` decides whether a
-   draft answer is worth a second-pair-of-eyes verifier round. Rules per spec
-   §5.4 — user hint short-circuits, then content scans (numbers, PSM/API,
-   TCC keys, ops verbs, SQL, money), then concept-question short-circuit, then
-   default skip.
+   draft answer is worth a second-pair-of-eyes verifier round. User hint
+   short-circuits, then content scans (numbers, service/API, TCC keys, ops
+   verbs, SQL, money), then concept-question short-circuit, then default skip.
 
 2. **Verify loop** (async): :func:`verify` forks a verifier subagent up to
-   ``max_rounds`` times. Production wiring (M7-T03) injects a runner that
-   calls :mod:`runtime.claude_proc`. The default runner raises
-   ``NotImplementedError`` so misuse is loud during MVP.
+   ``max_rounds`` times. The caller injects a runner (see the scheduler's
+   ``_make_verifier_runner``, which wraps :mod:`agent_runtime.claude_proc`).
+   The default runner raises ``NotImplementedError`` so an un-wired call is
+   loud rather than silent.
 
 A :class:`CostTracker` provides daily / per-chat budget enforcement with JSON
 state persistence. Daily counters reset at calendar-date rollover (checked
 lazily on every ``can_trigger`` / ``record`` call).
 
-This module is pure rule + framework — no Claude fork happens here. Real
-subprocess wiring lands in M7-T03 scheduler integration.
+This module is pure rule + framework — no Claude fork happens here; the
+subprocess runner is supplied by the scheduler.
 """
 
 from __future__ import annotations
@@ -62,12 +62,13 @@ _QUANTITATIVE = re.compile(
     r"(?:个|条|次|笔|份|台|节点|分钟|小时)",
     re.IGNORECASE,
 )
-# Strict PSM pattern: lowercase snake_case three-segment identifier where
-# each segment is at least 3 characters (e.g. ``lark.apaas.spring_billing``).
+# Strict service-identifier pattern: lowercase snake_case three-segment
+# identifier where each segment is at least 3 characters (e.g.
+# ``svc.module.handler``) — easy to hallucinate, so worth verifying.
 # The 3-char floor plus lowercase-only rule rejects version strings
 # (``1.0.0``), dates (``2026.04.23``), short filenames (``file.tar.gz`` —
 # ``gz`` is 2 chars), Java packages (``Foo.Bar.Baz`` — capitals) and CJK.
-_PSM = re.compile(r"\b[a-z][a-z0-9_]{2,}\.[a-z][a-z0-9_]{2,}\.[a-z][a-z0-9_]{2,}\b")
+_SERVICE_ID = re.compile(r"\b[a-z][a-z0-9_]{2,}\.[a-z][a-z0-9_]{2,}\.[a-z][a-z0-9_]{2,}\b")
 _API_PATH = re.compile(r"/api/v\d+")
 _TCC_KEY = re.compile(r"[a-z_]+\.[a-z_]+\.[a-z_]+")
 _OPS_VERBS = ["restart", "重启", "修改配置", "改 db", "改db", "发布", "deploy"]
@@ -94,7 +95,7 @@ def should_trigger(
 
     1. user_hint careful keywords  → trigger
     2. user_hint fast keywords     → skip
-    3. content rules (quantitative claims with units, PSM/API, TCC+config,
+    3. content rules (quantitative claims with units, service/API, TCC+config,
        ops verbs, SQL, money) — content rules **win over concept short-
        circuit** because dangerous specifics deserve verification even when
        the question is conceptual. Bare digits without a unit do NOT
@@ -113,8 +114,8 @@ def should_trigger(
     # Content-based rules (run before concept short-circuit so specifics win)
     if _QUANTITATIVE.search(draft_answer):
         return TriggerDecision(True, "quantitative_claim")
-    if _PSM.search(draft_answer) or _API_PATH.search(draft_answer):
-        return TriggerDecision(True, "psm_or_api")
+    if _SERVICE_ID.search(draft_answer) or _API_PATH.search(draft_answer):
+        return TriggerDecision(True, "service_or_api")
     if _TCC_KEY.search(draft_answer) and (
         "config" in draft_answer.lower() or "TCC" in draft_answer
     ):
