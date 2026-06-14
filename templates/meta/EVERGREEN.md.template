@@ -2,13 +2,13 @@
 _最近更新: {auto · compile-wiki} · Claude 维护_
 
 ## 当前角色
-- ByteDance / Lark / apaas team
-- 主要方向: billing / apaas / larkintegration
+- <组织 / 团队>
+- 主要方向: <方向 A> / <方向 B>
 
 ## 活跃项目（按优先级）
 {{PROJECTS_LIST}}
 
-## 本季 OKR（简版 · 详见 wiki/okr/2026-Q2.md）
+## 本季 OKR（简版 · 详见 wiki/okr/<season>.md）
 - O1: ...
 - O2: ...
 
@@ -20,14 +20,13 @@ _最近更新: {auto · compile-wiki} · Claude 维护_
 ## 项目路由表
 | 关键词 | work_dir | 项目常青卡 |
 |---|---|---|
-| 计费 / entitlement | ../billing | billing/EVERGREEN.md |
-| 低代码 / apaas | ../apaas | apaas/EVERGREEN.md |
-| larkintegration | ../larkint | larkint/EVERGREEN.md |
+| <关键词 A> | ../project-a | project-a/EVERGREEN.md |
+| <关键词 B> | ../project-b | project-b/EVERGREEN.md |
 
 ## 硬禁区
 - 不谈薪资 / 人事 / 未公开规划
 - 写操作必须走审批闭环（输出审批块，等人工确认）
 
 ## 近 14 天重要事件（Claude 滚动维护）
-- 2026-04-23: <事件>
-- 2026-04-20: <事件>
+- <date>: <事件>
+- <date>: <事件>

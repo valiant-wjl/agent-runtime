@@ -1,4 +1,4 @@
-# digital-agent project work_dir gitignore template.
+# agent-runtime project work_dir gitignore template.
 # Bootstrap renders this into <work_dir>/.gitignore (only if the directory
 # is a git repo and no .gitignore exists yet) so feishu image cache and
 # other transient runtime state never leak into the project repo history.
