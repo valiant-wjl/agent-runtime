@@ -1,14 +1,12 @@
-"""OpenTelemetry SDK wrapper for digital-agent.
+"""OpenTelemetry SDK wrapper for agent-runtime.
 
 Other modules NEVER import opentelemetry directly — this is the only
 seam. Lets us swap the backend (Langfuse / Phoenix / Jaeger) by editing
 only this file later.
 
-Failure policy (spec § 6.1): emit failures silent-drop + log.error.
-Trace emission MUST NEVER raise into scheduler — main reply path stays
-unaffected by observability problems.
-
-Spec: docs/specs/2026-05-12-digital-agent-observer-design.md § 3.1
+Failure policy: emit failures silent-drop + log.error. Trace emission
+MUST NEVER raise into scheduler — the main reply path stays unaffected
+by observability problems.
 """
 from __future__ import annotations
 
@@ -110,7 +108,7 @@ class FileSpanExporter:
 
 
 # ---------------------------------------------------------------------------
-# OTLP HTTP/JSON exporter (Fornax ingest)
+# OTLP HTTP/JSON exporter
 # ---------------------------------------------------------------------------
 
 
@@ -120,10 +118,10 @@ _STATUS_CODE_TO_OTLP = {"OK": 1, "ERROR": 2, "UNSET": 0}
 def _attr_value(v: Any) -> dict[str, Any]:
     """Serialize a Python value into an OTLP AnyValue.
 
-    Note (2026-05-21): Fornax server rejects OTLP intValue/doubleValue and
-    returns 'json Unmarshal err' for any payload that contains them, but
-    keeps HTTP 200 so the exporter cannot detect the drop. We coerce all
-    numbers to stringValue as a workaround until Fornax fixes its parser.
+    Note: some OTLP collectors reject intValue/doubleValue and return a
+    'json Unmarshal err' for any payload that contains them, while still
+    keeping HTTP 200 so the exporter cannot detect the drop. We coerce all
+    numbers to stringValue for maximum collector compatibility.
     """
     if isinstance(v, bool):
         return {"boolValue": v}
@@ -141,9 +139,9 @@ def _kv(attrs: dict[str, Any]) -> list[dict[str, Any]]:
 class OtlpHttpExporter:
     """Best-effort POST of spans to an OTLP HTTP/JSON collector.
 
-    Default OTLP/HTTP path is `/v1/traces` (OTel spec). Fornax's actual ingest
-    path is documented in the Fornax wiki — swap `endpoint` accordingly via
-    `FORNAX_OTLP_ENDPOINT` when known. Everything below is endpoint-agnostic.
+    Default OTLP/HTTP path is `/v1/traces` (OTel spec). Point it at your
+    collector via `AGENT_RUNTIME_OTLP_ENDPOINT`. Everything below is
+    endpoint-agnostic.
 
     Failure policy mirrors FileSpanExporter: silent drop + log.error + bump
     `drop_count`. Trace emission must NEVER raise into the scheduler.
@@ -154,7 +152,7 @@ class OtlpHttpExporter:
         *,
         endpoint: str,
         headers: dict[str, str] | None = None,
-        service_name: str = "digital-agent",
+        service_name: str = "agent-runtime",
         timeout: float = 5.0,
     ) -> None:
         self.endpoint = endpoint
@@ -186,7 +184,7 @@ class OtlpHttpExporter:
                     "attributes": _kv({"service.name": self.service_name}),
                 },
                 "scopeSpans": [{
-                    "scope": {"name": "digital-agent"},
+                    "scope": {"name": "agent-runtime"},
                     "spans": otlp_spans,
                 }],
             }],
@@ -204,7 +202,7 @@ class OtlpHttpExporter:
             with urllib.request.urlopen(req, timeout=self.timeout) as resp:
                 if resp.status >= 400:
                     raise RuntimeError(f"OTLP ingest non-2xx: {resp.status}")
-                # Fornax can return 200 with embedded json Unmarshal err.
+                # Some collectors return 200 with an embedded json Unmarshal err.
                 raw = resp.read(2048)
                 if isinstance(raw, (bytes, bytearray)) and raw:
                     try:
@@ -293,25 +291,25 @@ _current_span: contextvars.ContextVar[_MutableSpan | None] = contextvars.Context
 
 
 def _otlp_from_env() -> OtlpHttpExporter | None:
-    """Construct an OtlpHttpExporter from FORNAX_* env vars, or None.
+    """Construct an OtlpHttpExporter from AGENT_RUNTIME_OTLP_* env vars, or None.
 
-    `FORNAX_OTLP_ENDPOINT` (required to enable; full URL)
-    `FORNAX_OTLP_HEADERS_JSON` (optional; JSON object of header → value)
-    `FORNAX_OTLP_SERVICE_NAME` (optional; defaults to 'digital-agent')
+    `AGENT_RUNTIME_OTLP_ENDPOINT` (required to enable; full URL)
+    `AGENT_RUNTIME_OTLP_HEADERS_JSON` (optional; JSON object of header → value)
+    `AGENT_RUNTIME_OTLP_SERVICE_NAME` (optional; defaults to 'agent-runtime')
     """
-    endpoint = os.environ.get("FORNAX_OTLP_ENDPOINT", "").strip()
+    endpoint = os.environ.get("AGENT_RUNTIME_OTLP_ENDPOINT", "").strip()
     if not endpoint:
         return None
     headers: dict[str, str] = {}
-    raw_headers = os.environ.get("FORNAX_OTLP_HEADERS_JSON", "").strip()
+    raw_headers = os.environ.get("AGENT_RUNTIME_OTLP_HEADERS_JSON", "").strip()
     if raw_headers:
         try:
             parsed = json.loads(raw_headers)
             if isinstance(parsed, dict):
                 headers = {str(k): str(v) for k, v in parsed.items()}
         except Exception as e:
-            log.error("FORNAX_OTLP_HEADERS_JSON invalid: %r", e)
-    service_name = os.environ.get("FORNAX_OTLP_SERVICE_NAME", "digital-agent")
+            log.error("AGENT_RUNTIME_OTLP_HEADERS_JSON invalid: %r", e)
+    service_name = os.environ.get("AGENT_RUNTIME_OTLP_SERVICE_NAME", "agent-runtime")
     return OtlpHttpExporter(
         endpoint=endpoint, headers=headers, service_name=service_name,
     )
@@ -320,9 +318,9 @@ def _otlp_from_env() -> OtlpHttpExporter | None:
 def configure(*, trace_dir: Path | str, enabled: bool) -> None:
     """Wire up the singleton. Call once at daemon startup. Idempotent.
 
-    File exporter is always created; OTLP exporter only when FORNAX_OTLP_*
-    env vars are set. Both run in parallel — file is local source-of-truth
-    for observer, OTLP ships to Fornax for cross-cutting analytics.
+    File exporter is always created; OTLP exporter only when AGENT_RUNTIME_OTLP_*
+    env vars are set. Both run in parallel — the file is the local
+    source-of-truth, OTLP ships to your collector for cross-cutting analytics.
     """
     _state.enabled = bool(enabled)
     _state.exporter = FileSpanExporter(trace_dir=trace_dir)
