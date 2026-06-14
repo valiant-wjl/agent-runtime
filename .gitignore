@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+*.egg-info/
+log/
+.state/
+config.yaml
+config.yaml.bak*
+*.secrets.env
+.claude/
