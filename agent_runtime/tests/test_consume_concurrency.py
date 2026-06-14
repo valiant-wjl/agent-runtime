@@ -1,6 +1,6 @@
 """P1 concurrency regression: consume() must dispatch messages concurrently.
 
-Bug P (docs/specs/2026-05-12-digital-agent-observer-design.md § 14.7):
+Bug P (docs/specs/2026-05-12-agent-runtime-observer-design.md § 14.7):
 consume() previously `await`-ed handle_message inline, which serialized
 every message in a single channel — defeating the global / per-chat
 semaphores in `runtime.concurrency`. Alert chats that bursted 10 cards

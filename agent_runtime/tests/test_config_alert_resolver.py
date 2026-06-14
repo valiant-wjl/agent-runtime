@@ -15,7 +15,7 @@ def _base_cfg() -> dict:
         "version": 1,
         "channels": {"feishu": {"enabled": True}},
         "projects": {
-            "spring_billing": {
+            "example_project": {
                 "work_dir": "/tmp/sb",
                 "admin_users": ["ou_a"],
                 "read_phase": {
@@ -63,7 +63,7 @@ def test_config_alert_resolver_enabled_full_valid(tmp_path):
         "top_k": 3,
         "judge_timeout": 60,
         "judge_model": "haiku",
-        "alert_chats": [{"chat_id": "oc_x", "project": "spring_billing"}],
+        "alert_chats": [{"chat_id": "oc_x", "project": "example_project"}],
         "sweep": {"enabled": True, "hour": 4},
     }
     config.load_config(_write(tmp_path, cfg))
@@ -78,7 +78,7 @@ def test_config_alert_resolver_missing_top_k_errors(tmp_path):
         "enabled": True,
         "ttl_days": 14,
         "retriever": "keyword",
-        "alert_chats": [{"chat_id": "oc_x", "project": "spring_billing"}],
+        "alert_chats": [{"chat_id": "oc_x", "project": "example_project"}],
     }
     with pytest.raises(config.ConfigError, match="top_k"):
         config.load_config(_write(tmp_path, cfg))
@@ -90,7 +90,7 @@ def test_config_alert_resolver_missing_ttl_days_errors(tmp_path):
         "enabled": True,
         "retriever": "keyword",
         "top_k": 3,
-        "alert_chats": [{"chat_id": "oc_x", "project": "spring_billing"}],
+        "alert_chats": [{"chat_id": "oc_x", "project": "example_project"}],
     }
     with pytest.raises(config.ConfigError, match="ttl_days"):
         config.load_config(_write(tmp_path, cfg))
@@ -106,7 +106,7 @@ def test_config_alert_resolver_bogus_retriever_errors(tmp_path):
         "ttl_days": 14,
         "retriever": "bogus",
         "top_k": 3,
-        "alert_chats": [{"chat_id": "oc_x", "project": "spring_billing"}],
+        "alert_chats": [{"chat_id": "oc_x", "project": "example_project"}],
     }
     with pytest.raises(config.ConfigError, match="retriever"):
         config.load_config(_write(tmp_path, cfg))
@@ -151,7 +151,7 @@ def test_config_alert_resolver_sweep_hour_out_of_range_errors(tmp_path):
         "ttl_days": 14,
         "retriever": "keyword",
         "top_k": 3,
-        "alert_chats": [{"chat_id": "oc_x", "project": "spring_billing"}],
+        "alert_chats": [{"chat_id": "oc_x", "project": "example_project"}],
         "sweep": {"enabled": True, "hour": 24},
     }
     with pytest.raises(config.ConfigError, match="sweep.hour"):
@@ -166,6 +166,6 @@ def test_config_alert_resolver_sweep_section_optional(tmp_path):
         "ttl_days": 14,
         "retriever": "keyword",
         "top_k": 3,
-        "alert_chats": [{"chat_id": "oc_x", "project": "spring_billing"}],
+        "alert_chats": [{"chat_id": "oc_x", "project": "example_project"}],
     }
     config.load_config(_write(tmp_path, cfg))

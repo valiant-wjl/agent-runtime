@@ -28,10 +28,10 @@ def test_render_missing_variable_raises():
 def test_render_project_template():
     out = render_template(
         PROJECT / "CLAUDE.md.template",
-        {"PROJECT_NAME": "billing", "PSM": "lark.apaas.spring_billing", "USER_NAME": "X"},
+        {"PROJECT_NAME": "billing", "PSM": "svc.module.example_project", "USER_NAME": "X"},
     )
     assert "billing" in out
-    assert "lark.apaas.spring_billing" in out
+    assert "svc.module.example_project" in out
     assert "{{PROJECT_NAME}}" not in out
     assert "{{PSM}}" not in out
 

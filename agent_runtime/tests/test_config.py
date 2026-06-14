@@ -29,8 +29,8 @@ def test_read_phase_guard_only_gates_writes_without_downstream_control(tmp_path)
 
     # Platform writes have downstream control → run directly, not gated here.
     must_run_directly = [
-        "bytedcli --site cn tcc update-config lark.apaas.app_manager entitlement_scene_config_v1 --value @/tmp/x.json",
-        "bytedcli --site cn tcc deploy-config lark.apaas.app_manager entitlement_scene_config_v1",
+        "platform-cli --site cn tcc update-config svc.module.handler entitlement_scene_config_v1 --value @/tmp/x.json",
+        "platform-cli --site cn tcc deploy-config svc.module.handler entitlement_scene_config_v1",
         "bash scripts/publish.sh --env boe --scene Spark --file /tmp/spark_scene.json",
         "bash scripts/fetch_tcc.sh --env boe --scene Spark",
     ]
@@ -71,8 +71,8 @@ def test_meta_work_dir_injected_into_each_project(tmp_path):
         "channels": {"feishu": {"enabled": True}},
         "paths": {"meta_work_dir": "/home/u/work/agent-repos/meta"},
         "projects": {
-            "spring_billing": {
-                "work_dir": "/home/u/work/agent-repos/spring_billing",
+            "example_project": {
+                "work_dir": "/home/u/work/agent-repos/example_project",
                 "admin_users": ["ou_x"],
                 "read_phase": {"disallowed_tools": ["Edit", "Write", "NotebookEdit"]},
             },
@@ -80,7 +80,7 @@ def test_meta_work_dir_injected_into_each_project(tmp_path):
         "runtime": {"session_file": "x/sessions.json"},
     })
     cfg = load_config(p)
-    assert cfg["projects"]["spring_billing"]["meta_work_dir"] == (
+    assert cfg["projects"]["example_project"]["meta_work_dir"] == (
         "/home/u/work/agent-repos/meta"
     )
 

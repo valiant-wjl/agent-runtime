@@ -72,7 +72,7 @@ def test_parse_lesson_collapses_internal_newlines():
 
 
 def test_append_lesson_creates_file_when_missing(tmp_path: Path):
-    work_dir = tmp_path / "spring_billing"
+    work_dir = tmp_path / "example_project"
     work_dir.mkdir()
 
     lesson.append_lesson(work_dir, "自我介绍 ≤ 3 句")
@@ -210,14 +210,14 @@ def _scheduler_init():
 async def test_scheduler_lesson_command_writes_file_and_replies(tmp_path):
     """/lesson <content> → write file, reply '已记下', do NOT invoke claude."""
     session.configure(tmp_path / "sess.json")
-    work_dir = tmp_path / "spring_billing"
+    work_dir = tmp_path / "example_project"
     work_dir.mkdir()
     ch = _scheduler_channel()
     parsed = _scheduler_parsed("/lesson 自我介绍 ≤ 3 句")
 
     with patch("agent_runtime.scheduler.claude_proc.run", AsyncMock()) as run_mock:
         await scheduler.handle_message(
-            ch, parsed, "spring_billing", _project_cfg(work_dir), _RUNTIME_CFG
+            ch, parsed, "example_project", _project_cfg(work_dir), _RUNTIME_CFG
         )
 
     # Must NOT have invoked claude (zero-cost feedback path).
@@ -243,7 +243,7 @@ async def test_scheduler_lesson_command_empty_replies_usage(tmp_path):
 
     with patch("agent_runtime.scheduler.claude_proc.run", AsyncMock()) as run_mock:
         await scheduler.handle_message(
-            ch, parsed, "spring_billing", _project_cfg(work_dir), _RUNTIME_CFG
+            ch, parsed, "example_project", _project_cfg(work_dir), _RUNTIME_CFG
         )
 
     run_mock.assert_not_called()
@@ -265,7 +265,7 @@ async def test_scheduler_normal_message_skips_lesson_handler(tmp_path):
 
     with patch("agent_runtime.scheduler.claude_proc.run", AsyncMock(return_value=fake)) as run_mock:
         await scheduler.handle_message(
-            ch, parsed, "spring_billing", _project_cfg(work_dir), _RUNTIME_CFG
+            ch, parsed, "example_project", _project_cfg(work_dir), _RUNTIME_CFG
         )
 
     run_mock.assert_called_once()

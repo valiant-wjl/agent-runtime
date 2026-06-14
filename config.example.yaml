@@ -115,7 +115,7 @@ backup:
   meta_remote: ""                       # 必须 private git remote, bootstrap 校验
   cron_time: "02:00"
 
-# Trace emission for digital-agent-observer (Phase A spec).
+# Trace emission for agent-runtime-observer (Phase A spec).
 # Spans land at trace_dir/YYYY-MM.jsonl in OTel JSON shape.
 observability:
   enabled: true

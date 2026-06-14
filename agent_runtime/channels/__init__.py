@@ -1,4 +1,4 @@
-"""Channel adapter contract for digital-agent.
+"""Channel adapter contract for agent-runtime.
 
 All channel implementations must satisfy the ChannelAdapter Protocol defined here.
 ParsedMsg is the canonical message representation passed between channels and the runtime.

@@ -42,7 +42,7 @@ _PERSONA_MAX_BYTES = 32 * 1024
 
 # fleet-mcp.json ships alongside this module. Resolve it relative to
 # __file__ so the path is valid on every host. It was previously hardcoded
-# to a Linux deploy path (/home/wangjialei.v/...), which on any other machine
+# to a Linux deploy path (/home/example-user/...), which on any other machine
 # made claude exit with "Invalid MCP configuration: file not found" before
 # emitting a single stream event — the user just saw "(no answer)".
 _FLEET_MCP_CONFIG = os.path.join(

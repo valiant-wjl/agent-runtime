@@ -139,7 +139,7 @@ def test_single_project_mention_routes_without_chat_id_whitelist():
     都要改 config.chat_ids + 重启。多 project 部署仍走 S1/S2/S3（保留歧义解析）。
     """
     single = {
-        "spring_billing": {
+        "example_project": {
             "chat_ids": ["oc_already_listed"],   # 白名单里已有别的群
             "routing_keywords": ["计费"],
             "display_name": "lbp-growth-agent",
@@ -149,7 +149,7 @@ def test_single_project_mention_routes_without_chat_id_whitelist():
     msg = _msg(mentions=[BOT_MENTION], chat_id="oc_brand_new_group", text="你好")
     result = routing.route(msg, single, bot_mention_key=BOT_MENTION)
     assert result is not None
-    assert result[0] == "spring_billing"
+    assert result[0] == "example_project"
 
 
 def test_single_project_no_mention_no_chat_no_keyword_returns_none():
@@ -186,7 +186,7 @@ def test_p2p_chat_type_routes_single_project_without_mention():
     bot 就是和它 1:1 对话", 不应该再要求他在每条消息里带 keyword.
     """
     single = {
-        "spring_billing": {
+        "example_project": {
             "chat_ids": [],
             "routing_keywords": ["计费"],
             "display_name": "lbp-growth-agent",
@@ -200,7 +200,7 @@ def test_p2p_chat_type_routes_single_project_without_mention():
     )
     result = routing.route(msg, single, bot_mention_key=BOT_MENTION)
     assert result is not None
-    assert result[0] == "spring_billing"
+    assert result[0] == "example_project"
 
 
 def test_group_chat_type_without_mention_does_not_use_strategy_0():
@@ -241,7 +241,7 @@ def test_p2p_chat_type_multi_project_does_not_use_strategy_0():
 def test_chat_type_none_falls_back_to_legacy_strategies():
     """旧调用没传 chat_type (None) → 表现与改造前完全一致 (向后兼容)."""
     single = {
-        "spring_billing": {
+        "example_project": {
             "chat_ids": [],
             "routing_keywords": ["计费"],
             "display_name": "B",

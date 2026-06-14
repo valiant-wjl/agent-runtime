@@ -1,6 +1,6 @@
 # agent-runtime
 
-A turn-by-turn **digital-agent runtime** that wires an IM channel (e.g. Feishu/Lark)
+A turn-by-turn **digital agent runtime** that wires an IM channel (e.g. Feishu/Lark)
 to a Claude CLI backend, with a verification loop, human-approval gating, multi-project
 routing, and OpenTelemetry tracing built in.
 

@@ -70,7 +70,7 @@ def test_bare_id_or_error_code_does_not_trigger():
 
 
 def test_psm_answer_triggers():
-    d = should_trigger("billing PSM", "PSM 是 lark.apaas.spring_billing")
+    d = should_trigger("billing PSM", "PSM 是 svc.module.example_project")
     assert d.trigger is True
     assert d.reason == "service_or_api"
 

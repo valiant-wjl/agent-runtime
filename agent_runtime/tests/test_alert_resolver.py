@@ -50,7 +50,7 @@ _ALERT_CFG_BASE = {
     "top_k": 3,
     "judge_timeout": 60,
     "judge_model": "haiku",
-    "alert_chats": [{"chat_id": "oc_alert", "project": "spring_billing"}],
+    "alert_chats": [{"chat_id": "oc_alert", "project": "example_project"}],
     "sweep": {"enabled": True, "hour": 4},
 }
 
@@ -91,7 +91,7 @@ def test_is_alert_message_unknown_sender_type_not_alert():
 def test_is_alert_message_bot_in_alert_chat_returns_route():
     ok, route = alert_resolver.is_alert_message(_parsed(), _ALERT_CFG_BASE)
     assert ok is True
-    assert route == {"chat_id": "oc_alert", "project": "spring_billing"}
+    assert route == {"chat_id": "oc_alert", "project": "example_project"}
 
 
 def test_is_alert_message_missing_alert_resolver_section_safe():

@@ -92,7 +92,7 @@ def _write(status: str) -> None:
         tmp.replace(_status_file)
     except OSError as e:
         log.warning("failed to write status.json: %s", e)
-        _second_channel_alert("digital-agent offline")
+        _second_channel_alert("agent-runtime offline")
 
 
 def _append_history(status: str) -> None:
@@ -212,7 +212,7 @@ def _second_channel_alert(message: str) -> None:
             [
                 "osascript",
                 "-e",
-                f'display notification "{message}" with title "digital-agent"',
+                f'display notification "{message}" with title "agent-runtime"',
             ],
             check=False,
             timeout=5,

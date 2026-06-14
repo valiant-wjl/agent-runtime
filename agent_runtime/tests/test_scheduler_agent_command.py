@@ -22,7 +22,7 @@ def _seed_config(tmp_path: Path) -> tuple[Path, dict]:
         "version": 1,
         "channels": {"feishu": {"enabled": True}},
         "projects": {
-            "spring_billing": {
+            "example_project": {
                 "work_dir": str(tmp_path / "wd"),
                 "admin_users": ["u_admin"],
                 "chat_ids": ["oc_existing"],
@@ -37,7 +37,7 @@ def _seed_config(tmp_path: Path) -> tuple[Path, dict]:
             "retriever": "keyword",
             "top_k": 3,
             "alert_chats": [
-                {"chat_id": "oc_existing", "project": "spring_billing"},
+                {"chat_id": "oc_existing", "project": "example_project"},
             ],
         },
     }
@@ -82,8 +82,8 @@ async def test_scheduler_dispatches_agent_show(tmp_path):
     parsed = _msg("/agent show")
     summary = scheduler._TurnSummary(msg_id="m1", chat_id="oc_dm")
     await _handle_message_inner_impl(
-        channel, parsed, "spring_billing",
-        cfg["projects"]["spring_billing"], cfg["runtime"],
+        channel, parsed, "example_project",
+        cfg["projects"]["example_project"], cfg["runtime"],
         features_cfg={}, alert_cfg=cfg["alert_resolver"], summary=summary,
         scheduler_ctx=ctx,
     )
@@ -102,8 +102,8 @@ async def test_scheduler_register_full_flow(tmp_path):
     parsed_register = _msg("/agent alert register", chat="oc_new",
                             chat_type="group", message_id="m1")
     await _handle_message_inner_impl(
-        channel, parsed_register, "spring_billing",
-        cfg["projects"]["spring_billing"], cfg["runtime"],
+        channel, parsed_register, "example_project",
+        cfg["projects"]["example_project"], cfg["runtime"],
         features_cfg={}, alert_cfg=cfg["alert_resolver"], summary=summary,
         scheduler_ctx=ctx,
     )
@@ -118,8 +118,8 @@ async def test_scheduler_register_full_flow(tmp_path):
                            message_id="m2", thread_root_id="m2")
     summary2 = scheduler._TurnSummary(msg_id="m2", chat_id="oc_new")
     await _handle_message_inner_impl(
-        channel, parsed_approve, "spring_billing",
-        cfg["projects"]["spring_billing"], cfg["runtime"],
+        channel, parsed_approve, "example_project",
+        cfg["projects"]["example_project"], cfg["runtime"],
         features_cfg={}, alert_cfg=cfg["alert_resolver"], summary=summary2,
         scheduler_ctx=ctx,
     )
@@ -137,8 +137,8 @@ async def test_scheduler_non_admin_denied(tmp_path):
     parsed = _msg("/agent show", sender="u_random")
     summary = scheduler._TurnSummary(msg_id="m1", chat_id="oc_dm")
     await _handle_message_inner_impl(
-        channel, parsed, "spring_billing",
-        cfg["projects"]["spring_billing"], cfg["runtime"],
+        channel, parsed, "example_project",
+        cfg["projects"]["example_project"], cfg["runtime"],
         features_cfg={}, alert_cfg=cfg["alert_resolver"], summary=summary,
         scheduler_ctx=ctx,
     )
@@ -151,7 +151,7 @@ async def test_scheduler_cancel_pending(tmp_path):
     cfg_path, cfg = _seed_config(tmp_path)
     # Seed 2 alert_chats so removing one keeps the list non-empty
     cfg["alert_resolver"]["alert_chats"].append(
-        {"chat_id": "oc_keep", "project": "spring_billing"},
+        {"chat_id": "oc_keep", "project": "example_project"},
     )
     YAML(typ="rt").dump(cfg, cfg_path.open("w"))
 
@@ -160,16 +160,16 @@ async def test_scheduler_cancel_pending(tmp_path):
     summary = scheduler._TurnSummary(msg_id="m1", chat_id="oc_dm")
     parsed_remove = _msg("/agent alert remove oc_existing")
     await _handle_message_inner_impl(
-        channel, parsed_remove, "spring_billing",
-        cfg["projects"]["spring_billing"], cfg["runtime"],
+        channel, parsed_remove, "example_project",
+        cfg["projects"]["example_project"], cfg["runtime"],
         features_cfg={}, alert_cfg=cfg["alert_resolver"], summary=summary,
         scheduler_ctx=ctx,
     )
     parsed_cancel = _msg("取消", message_id="m2", thread_root_id="m1")
     summary2 = scheduler._TurnSummary(msg_id="m2", chat_id="oc_dm")
     await _handle_message_inner_impl(
-        channel, parsed_cancel, "spring_billing",
-        cfg["projects"]["spring_billing"], cfg["runtime"],
+        channel, parsed_cancel, "example_project",
+        cfg["projects"]["example_project"], cfg["runtime"],
         features_cfg={}, alert_cfg=cfg["alert_resolver"], summary=summary2,
         scheduler_ctx=ctx,
     )

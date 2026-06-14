@@ -26,7 +26,7 @@ TITLE="${1:?title required}"
 URL="${2:?url required}"
 ACTION="${3:-请打开链接完成授权后回复}"
 
-OPEN_ID="${LARK_SELF_OPEN_ID:-ou_81dce9ad1651fa2466562de0eda19e98}"
+OPEN_ID="${LARK_SELF_OPEN_ID:-ou_REPLACE_ME}"
 
 MSG="🔐 ${TITLE}
 

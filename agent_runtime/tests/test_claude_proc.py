@@ -117,7 +117,7 @@ async def test_disallowed_bash_patterns_appended_to_prompt():
         captured["args"] = args
         return mock_proc
 
-    patterns = ["bytedcli tcc.*--write", "bytedcli rds.*--execute"]
+    patterns = ["platform-cli tcc.*--write", "platform-cli rds.*--execute"]
     with patch("asyncio.create_subprocess_exec", side_effect=fake_spawn):
         await claude_proc.run(
             work_dir="/tmp/x",
@@ -132,8 +132,8 @@ async def test_disallowed_bash_patterns_appended_to_prompt():
     assert "--append-system-prompt" in args_list
     idx = args_list.index("--append-system-prompt")
     system_prompt_value = args_list[idx + 1]
-    assert "bytedcli tcc.*--write" in system_prompt_value
-    assert "bytedcli rds.*--execute" in system_prompt_value
+    assert "platform-cli tcc.*--write" in system_prompt_value
+    assert "platform-cli rds.*--execute" in system_prompt_value
     # The restriction must be framed as read-phase only (not a permanent ban)
     # and must steer toward a structured approval block whose write phase the
     # bot itself runs — NOT toward refusing forever / handing commands to the
@@ -189,7 +189,7 @@ async def test_mcp_config_path_is_module_relative_and_exists():
     """--mcp-config must point at the fleet-mcp.json shipped with this module.
 
     Regression: the path was hardcoded to a Linux deploy path
-    (/home/wangjialei.v/...), so on any other host claude exited with
+    (/home/example-user/...), so on any other host claude exited with
     "Invalid MCP configuration: file not found", emitted zero events, and
     the user saw "(no answer)". Pin it to a module-relative, existing path.
     """

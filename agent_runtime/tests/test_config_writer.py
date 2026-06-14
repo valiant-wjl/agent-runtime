@@ -17,7 +17,7 @@ channels:
   feishu:
     enabled: true
 projects:
-  spring_billing:
+  example_project:
     work_dir: /tmp/wd
     admin_users:
       - ou_admin
@@ -34,9 +34,9 @@ alert_resolver:
   top_k: 3
   alert_chats:
     - chat_id: oc_existing
-      project: spring_billing
+      project: example_project
     - chat_id: oc_keep
-      project: spring_billing
+      project: example_project
 """
 
 
@@ -51,7 +51,7 @@ def test_add_alert_chat_preserves_comments(tmp_path):
     config_writer.add_alert_chat(
         cfg_path,
         chat_id="oc_new",
-        project="spring_billing",
+        project="example_project",
         backup_dir=tmp_path / "bak",
     )
     text = cfg_path.read_text()
@@ -65,12 +65,12 @@ def test_add_alert_chat_updates_project_chat_ids(tmp_path):
     config_writer.add_alert_chat(
         cfg_path,
         chat_id="oc_new",
-        project="spring_billing",
+        project="example_project",
         backup_dir=tmp_path / "bak",
     )
     y = YAML(typ="rt")
     data = y.load(cfg_path)
-    chat_ids = list(data["projects"]["spring_billing"]["chat_ids"])
+    chat_ids = list(data["projects"]["example_project"]["chat_ids"])
     assert "oc_existing" in chat_ids
     assert "oc_new" in chat_ids
     alert_chats = list(data["alert_resolver"]["alert_chats"])
@@ -82,12 +82,12 @@ def test_add_alert_chat_is_idempotent(tmp_path):
     config_writer.add_alert_chat(
         cfg_path,
         chat_id="oc_existing",
-        project="spring_billing",
+        project="example_project",
         backup_dir=tmp_path / "bak",
     )
     y = YAML(typ="rt")
     data = y.load(cfg_path)
-    chat_ids = list(data["projects"]["spring_billing"]["chat_ids"])
+    chat_ids = list(data["projects"]["example_project"]["chat_ids"])
     assert chat_ids.count("oc_existing") == 1
     # Sample seeds 2 entries; idempotent re-add must leave count unchanged.
     assert len(data["alert_resolver"]["alert_chats"]) == 2
@@ -121,7 +121,7 @@ def test_writer_creates_bak_file(tmp_path):
     cfg_path = _write_cfg(tmp_path)
     backup_dir = tmp_path / "bak"
     config_writer.add_alert_chat(
-        cfg_path, chat_id="oc_new", project="spring_billing",
+        cfg_path, chat_id="oc_new", project="example_project",
         backup_dir=backup_dir,
     )
     baks = list(backup_dir.glob("config.yaml.*.bak"))
@@ -133,7 +133,7 @@ def test_writer_keeps_only_latest_5_baks(tmp_path):
     backup_dir = tmp_path / "bak"
     for i in range(7):
         config_writer.add_alert_chat(
-            cfg_path, chat_id=f"oc_new_{i}", project="spring_billing",
+            cfg_path, chat_id=f"oc_new_{i}", project="example_project",
             backup_dir=backup_dir,
         )
     baks = sorted(backup_dir.glob("config.yaml.*.bak"))
@@ -178,7 +178,7 @@ def test_lock_timeout(tmp_path, monkeypatch):
             config_writer.add_alert_chat(
                 cfg_path,
                 chat_id="oc_x",
-                project="spring_billing",
+                project="example_project",
                 backup_dir=tmp_path / "bak",
                 lock_timeout_s=0.1,
             )

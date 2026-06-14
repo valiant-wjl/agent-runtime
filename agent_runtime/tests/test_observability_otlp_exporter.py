@@ -39,7 +39,7 @@ def _mock_resp(status: int = 200) -> MagicMock:
 
 def test_exporter_posts_otlp_json_shape():
     exp = OtlpHttpExporter(
-        endpoint="https://fornax.bytedance.net/v1/traces",
+        endpoint="https://collector.example.com/v1/traces",
         headers={"x-jwt-token": "abc"},
     )
     with patch("urllib.request.urlopen", return_value=_mock_resp(200)) as urlopen:
@@ -122,18 +122,18 @@ def test_otlp_from_env_returns_none_when_endpoint_blank(monkeypatch):
 
 
 def test_otlp_from_env_parses_headers_json(monkeypatch):
-    monkeypatch.setenv("AGENT_RUNTIME_OTLP_ENDPOINT", "https://fornax.bytedance.net/v1/traces")
+    monkeypatch.setenv("AGENT_RUNTIME_OTLP_ENDPOINT", "https://collector.example.com/v1/traces")
     monkeypatch.setenv(
         "AGENT_RUNTIME_OTLP_HEADERS_JSON",
         json.dumps({"x-jwt-token": "tok", "x-workspace-id": "7590068861145991426"}),
     )
-    monkeypatch.setenv("AGENT_RUNTIME_OTLP_SERVICE_NAME", "digital-agent-prod")
+    monkeypatch.setenv("AGENT_RUNTIME_OTLP_SERVICE_NAME", "agent-runtime-prod")
     exp = _otlp_from_env()
     assert exp is not None
-    assert exp.endpoint == "https://fornax.bytedance.net/v1/traces"
+    assert exp.endpoint == "https://collector.example.com/v1/traces"
     assert exp.headers["x-jwt-token"] == "tok"
     assert exp.headers["x-workspace-id"] == "7590068861145991426"
-    assert exp.service_name == "digital-agent-prod"
+    assert exp.service_name == "agent-runtime-prod"
 
 
 def test_otlp_from_env_tolerates_bad_headers_json(monkeypatch):

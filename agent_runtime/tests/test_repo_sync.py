@@ -115,7 +115,7 @@ async def test_sync_multi_each_repo_status_and_pulls(tmp_path):
 
     with patch("asyncio.create_subprocess_exec", side_effect=fake_spawn):
         result = await repo_sync._sync_one(
-            "spring_billing",
+            "example_project",
             work_dir,
             repos=[
                 {"name": "billing", "url": "git@example/billing.git"},
@@ -167,7 +167,7 @@ async def test_sync_multi_one_repo_fail_other_continues(tmp_path):
 
     with patch("asyncio.create_subprocess_exec", side_effect=fake_spawn):
         result = await repo_sync._sync_one(
-            "spring_billing",
+            "example_project",
             work_dir,
             repos=[
                 {"name": "ok", "url": "x"},
@@ -200,7 +200,7 @@ async def test_sync_multi_clones_missing_repo(tmp_path):
 
     with patch("asyncio.create_subprocess_exec", side_effect=fake_spawn):
         result = await repo_sync._sync_one(
-            "spring_billing",
+            "example_project",
             work_dir,
             repos=[{"name": "billing", "url": "git@example/billing.git"}],
         )

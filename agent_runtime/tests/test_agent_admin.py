@@ -45,7 +45,7 @@ def _cfg(work_dir: Path) -> dict:
     return {
         "version": 1,
         "channels": {"feishu": {"enabled": True}},
-        "projects": {"spring_billing": _project_cfg(work_dir)},
+        "projects": {"example_project": _project_cfg(work_dir)},
         "runtime": {"session_file": "./.state/sessions.json"},
         "alert_resolver": {
             "enabled": True,
@@ -53,8 +53,8 @@ def _cfg(work_dir: Path) -> dict:
             "retriever": "keyword",
             "top_k": 3,
             "alert_chats": [
-                {"chat_id": "oc_existing", "project": "spring_billing"},
-                {"chat_id": "oc_keep", "project": "spring_billing"},
+                {"chat_id": "oc_existing", "project": "example_project"},
+                {"chat_id": "oc_keep", "project": "example_project"},
             ],
         },
     }
@@ -79,7 +79,7 @@ async def test_dispatch_permission_denied(tmp_path):
     ctx = _StubCtx(cfg=cfg, config_path=tmp_path / "config.yaml",
                    backup_dir=tmp_path / "bak")
     await agent_admin.dispatch(
-        parsed, cfg["projects"]["spring_billing"], cfg, channel, ctx,
+        parsed, cfg["projects"]["example_project"], cfg, channel, ctx,
     )
     channel.reply.assert_awaited_once()
     body = channel.reply.await_args.args[1]
@@ -94,11 +94,11 @@ async def test_dispatch_show_lists_alert_chats(tmp_path):
     ctx = _StubCtx(cfg=cfg, config_path=tmp_path / "config.yaml",
                    backup_dir=tmp_path / "bak")
     await agent_admin.dispatch(
-        parsed, cfg["projects"]["spring_billing"], cfg, channel, ctx,
+        parsed, cfg["projects"]["example_project"], cfg, channel, ctx,
     )
     body = channel.reply.await_args.args[1]
     assert "oc_existing" in body
-    assert "spring_billing" in body
+    assert "example_project" in body
 
 
 @pytest.mark.asyncio
@@ -109,7 +109,7 @@ async def test_dispatch_alert_list(tmp_path):
     ctx = _StubCtx(cfg=cfg, config_path=tmp_path / "config.yaml",
                    backup_dir=tmp_path / "bak")
     await agent_admin.dispatch(
-        parsed, cfg["projects"]["spring_billing"], cfg, channel, ctx,
+        parsed, cfg["projects"]["example_project"], cfg, channel, ctx,
     )
     body = channel.reply.await_args.args[1]
     assert "oc_existing" in body
@@ -123,7 +123,7 @@ async def test_dispatch_help_on_unknown(tmp_path):
     ctx = _StubCtx(cfg=cfg, config_path=tmp_path / "config.yaml",
                    backup_dir=tmp_path / "bak")
     await agent_admin.dispatch(
-        parsed, cfg["projects"]["spring_billing"], cfg, channel, ctx,
+        parsed, cfg["projects"]["example_project"], cfg, channel, ctx,
     )
     body = channel.reply.await_args.args[1]
     assert "用法" in body or "usage" in body.lower()
@@ -138,7 +138,7 @@ async def test_dispatch_show_empty_alert_chats(tmp_path):
     ctx = _StubCtx(cfg=cfg, config_path=tmp_path / "config.yaml",
                    backup_dir=tmp_path / "bak")
     await agent_admin.dispatch(
-        parsed, cfg["projects"]["spring_billing"], cfg, channel, ctx,
+        parsed, cfg["projects"]["example_project"], cfg, channel, ctx,
     )
     body = channel.reply.await_args.args[1]
     assert "0" in body or "暂无" in body or "把 bot 拉到群里" in body
@@ -152,7 +152,7 @@ async def test_dispatch_alert_remove_stages_pending(tmp_path):
     ctx = _StubCtx(cfg=cfg, config_path=tmp_path / "config.yaml",
                    backup_dir=tmp_path / "bak")
     await agent_admin.dispatch(
-        parsed, cfg["projects"]["spring_billing"], cfg, channel, ctx,
+        parsed, cfg["projects"]["example_project"], cfg, channel, ctx,
     )
     body = channel.reply.await_args.args[1]
     assert "[APPROVAL_REQUIRED]" in body
@@ -170,7 +170,7 @@ async def test_dispatch_alert_remove_unknown_id(tmp_path):
     ctx = _StubCtx(cfg=cfg, config_path=tmp_path / "config.yaml",
                    backup_dir=tmp_path / "bak")
     await agent_admin.dispatch(
-        parsed, cfg["projects"]["spring_billing"], cfg, channel, ctx,
+        parsed, cfg["projects"]["example_project"], cfg, channel, ctx,
     )
     body = channel.reply.await_args.args[1]
     assert "未找到" in body
@@ -186,7 +186,7 @@ async def test_dispatch_alert_register_idempotent_when_present(tmp_path):
     ctx = _StubCtx(cfg=cfg, config_path=tmp_path / "config.yaml",
                    backup_dir=tmp_path / "bak")
     await agent_admin.dispatch(
-        parsed, cfg["projects"]["spring_billing"], cfg, channel, ctx,
+        parsed, cfg["projects"]["example_project"], cfg, channel, ctx,
     )
     body = channel.reply.await_args.args[1]
     assert "已在监听" in body
@@ -202,14 +202,14 @@ async def test_dispatch_alert_register_stages_pending(tmp_path):
     ctx = _StubCtx(cfg=cfg, config_path=tmp_path / "config.yaml",
                    backup_dir=tmp_path / "bak")
     await agent_admin.dispatch(
-        parsed, cfg["projects"]["spring_billing"], cfg, channel, ctx,
+        parsed, cfg["projects"]["example_project"], cfg, channel, ctx,
     )
     body = channel.reply.await_args.args[1]
     assert "[APPROVAL_REQUIRED]" in body
     assert "oc_new_group" in body
     p = agent_pending.get(agent_admin._thread_key(parsed))
     assert p is not None and p.action == "alert_register"
-    assert p.payload == {"chat_id": "oc_new_group", "project": "spring_billing"}
+    assert p.payload == {"chat_id": "oc_new_group", "project": "example_project"}
 
 
 @pytest.mark.asyncio
@@ -226,14 +226,14 @@ async def test_apply_pending_register_writes_config_and_reloads(tmp_path):
     ctx = _StubCtx(cfg=cfg, config_path=cfg_path,
                    backup_dir=tmp_path / "bak")
     await agent_admin.dispatch(
-        parsed, cfg["projects"]["spring_billing"], cfg, channel, ctx,
+        parsed, cfg["projects"]["example_project"], cfg, channel, ctx,
     )
     pending = agent_pending.get(agent_admin._thread_key(parsed))
     await agent_admin.apply_pending(parsed, pending, cfg, channel, ctx)
 
     chats = cfg["alert_resolver"]["alert_chats"]
     assert any(e["chat_id"] == "oc_new_group" for e in chats)
-    assert "oc_new_group" in cfg["projects"]["spring_billing"]["chat_ids"]
+    assert "oc_new_group" in cfg["projects"]["example_project"]["chat_ids"]
     assert len(ctx.restart_calls) == 1
 
 
@@ -251,7 +251,7 @@ async def test_apply_pending_remove(tmp_path):
     ctx = _StubCtx(cfg=cfg, config_path=cfg_path,
                    backup_dir=tmp_path / "bak")
     await agent_admin.dispatch(
-        parsed, cfg["projects"]["spring_billing"], cfg, channel, ctx,
+        parsed, cfg["projects"]["example_project"], cfg, channel, ctx,
     )
     pending = agent_pending.get(agent_admin._thread_key(parsed))
     await agent_admin.apply_pending(parsed, pending, cfg, channel, ctx)

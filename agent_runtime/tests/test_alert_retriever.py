@@ -165,7 +165,7 @@ def test_chinese_unigram_matching(tmp_path: Path):
     kb = AlertKB(tmp_path)
     _seed(
         tmp_path, "oc_a",
-        _row(id="alert-zh", text="账单超时报错 spring_billing 服务"),
+        _row(id="alert-zh", text="账单超时报错 example_project 服务"),
         _row(id="alert-en", text="completely unrelated english text"),
     )
     r = KeywordRetriever(kb=kb, ttl_seconds=14 * 86400)

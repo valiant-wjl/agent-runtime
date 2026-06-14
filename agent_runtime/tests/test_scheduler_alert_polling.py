@@ -28,7 +28,7 @@ _ALERT_CFG_BASE = {
     "top_k": 3,
     "judge_timeout": 60,
     "judge_model": "haiku",
-    "alert_chats": [{"chat_id": "oc_alert", "project": "spring_billing"}],
+    "alert_chats": [{"chat_id": "oc_alert", "project": "example_project"}],
     "polling": {
         "enabled": True,
         "interval_seconds": 30,
@@ -95,7 +95,7 @@ async def test_skip_history_seeds_cursor_to_now_on_first_iteration(tmp_path):
     with pytest.raises(asyncio.CancelledError):
         await scheduler.run_alert_polling_loop(
             alert_cfg=_ALERT_CFG_BASE,
-            projects={"spring_billing": _project_cfg(tmp_path)},
+            projects={"example_project": _project_cfg(tmp_path)},
             runtime_cfg={"reply_timeout": 300, "session_max_age": 86400},
             features_cfg={},
             cursor=cursor,
@@ -136,7 +136,7 @@ async def test_last_24h_seeds_cursor_to_24h_ago(tmp_path):
     with pytest.raises(asyncio.CancelledError):
         await scheduler.run_alert_polling_loop(
             alert_cfg=cfg,
-            projects={"spring_billing": _project_cfg(tmp_path)},
+            projects={"example_project": _project_cfg(tmp_path)},
             runtime_cfg={"reply_timeout": 300, "session_max_age": 86400},
             features_cfg={},
             cursor=cursor,
@@ -181,7 +181,7 @@ async def test_existing_cursor_is_preserved_across_restarts(tmp_path):
     with pytest.raises(asyncio.CancelledError):
         await scheduler.run_alert_polling_loop(
             alert_cfg=_ALERT_CFG_BASE,
-            projects={"spring_billing": _project_cfg(tmp_path)},
+            projects={"example_project": _project_cfg(tmp_path)},
             runtime_cfg={"reply_timeout": 300, "session_max_age": 86400},
             features_cfg={},
             cursor=cursor,
@@ -224,7 +224,7 @@ async def test_polling_loop_dispatches_messages_serially(tmp_path):
     with pytest.raises(asyncio.CancelledError):
         await scheduler.run_alert_polling_loop(
             alert_cfg=_ALERT_CFG_BASE,
-            projects={"spring_billing": _project_cfg(tmp_path)},
+            projects={"example_project": _project_cfg(tmp_path)},
             runtime_cfg={"reply_timeout": 300, "session_max_age": 86400},
             features_cfg={},
             cursor=cursor,
@@ -263,7 +263,7 @@ async def test_polling_loop_advances_cursor_even_when_handle_crashes(tmp_path):
     with pytest.raises(asyncio.CancelledError):
         await scheduler.run_alert_polling_loop(
             alert_cfg=_ALERT_CFG_BASE,
-            projects={"spring_billing": _project_cfg(tmp_path)},
+            projects={"example_project": _project_cfg(tmp_path)},
             runtime_cfg={"reply_timeout": 300, "session_max_age": 86400},
             features_cfg={},
             cursor=cursor,
@@ -297,7 +297,7 @@ async def test_polling_loop_swallows_poll_chat_failure(tmp_path):
     with pytest.raises(asyncio.CancelledError):
         await scheduler.run_alert_polling_loop(
             alert_cfg=_ALERT_CFG_BASE,
-            projects={"spring_billing": _project_cfg(tmp_path)},
+            projects={"example_project": _project_cfg(tmp_path)},
             runtime_cfg={"reply_timeout": 300, "session_max_age": 86400},
             features_cfg={},
             cursor=cursor,
@@ -344,7 +344,7 @@ async def test_last_24h_cap_drops_oldest_when_over_limit(tmp_path):
     with pytest.raises(asyncio.CancelledError):
         await scheduler.run_alert_polling_loop(
             alert_cfg=cfg,
-            projects={"spring_billing": _project_cfg(tmp_path)},
+            projects={"example_project": _project_cfg(tmp_path)},
             runtime_cfg={"reply_timeout": 300, "session_max_age": 86400},
             features_cfg={},
             cursor=cursor,

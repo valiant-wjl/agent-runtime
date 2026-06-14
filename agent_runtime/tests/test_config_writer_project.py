@@ -17,7 +17,7 @@ channels:
   feishu:
     enabled: true
 projects:
-  spring_billing:
+  example_project:
     work_dir: /tmp/wd
     display_name: Spring 计费
     model: opus
@@ -92,7 +92,7 @@ def test_add_project_preserves_comments_and_other_projects(tmp_path):
     text = cfg_path.read_text()
     assert "# top-level comment should survive" in text
     assert "# keep this comment" in text
-    assert "spring_billing" in text
+    assert "example_project" in text
     assert "autumn_qa" in text
 
 
@@ -126,10 +126,10 @@ def test_add_project_chat_id_conflict_raises(tmp_path):
             cfg_path,
             name="autumn_qa",
             work_dir="/tmp/autumn",
-            chat_id="oc_existing",  # already owned by spring_billing
+            chat_id="oc_existing",  # already owned by example_project
             backup_dir=tmp_path / "bak",
         )
-    assert "spring_billing" in str(exc.value)
+    assert "example_project" in str(exc.value)
 
 
 def test_remove_project_deletes_only_target(tmp_path):
@@ -149,7 +149,7 @@ def test_remove_project_deletes_only_target(tmp_path):
     y = YAML(typ="rt")
     data = y.load(cfg_path)
     assert "autumn_qa" not in data["projects"]
-    assert "spring_billing" in data["projects"]
+    assert "example_project" in data["projects"]
 
 
 def test_remove_project_unknown_raises(tmp_path):

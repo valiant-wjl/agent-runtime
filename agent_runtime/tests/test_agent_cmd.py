@@ -41,10 +41,10 @@ def test_parse_alert_remove_with_chat_id():
 
 
 def test_parse_alert_register_with_project_flag():
-    cmd = agent_cmd.parse_agent("/agent alert register --project spring_billing")
+    cmd = agent_cmd.parse_agent("/agent alert register --project example_project")
     assert cmd.verb == "alert"
     assert cmd.sub == "register"
-    assert cmd.flags == {"project": "spring_billing"}
+    assert cmd.flags == {"project": "example_project"}
 
 
 def test_parse_alert_register_without_flag():

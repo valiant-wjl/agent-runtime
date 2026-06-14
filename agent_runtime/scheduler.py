@@ -1,4 +1,4 @@
-"""digital-agent runtime scheduler.
+"""agent-runtime scheduler.
 
 Full implementation for M2-T13: assembles all runtime components and
 provides the main event loop.
@@ -1632,7 +1632,7 @@ def _maybe_inject_lessons(project_cfg: dict, question: str) -> str:
     if not body:
         return question
     return (
-        "PRIOR LESSONS (王佳磊 has corrected the agent before; verify the "
+        "PRIOR LESSONS (管理员 has corrected the agent before; verify the "
         "draft below does not violate any of these):\n\n"
         f"{body}\n\n"
         "---\n\nUSER QUESTION:\n"
@@ -1699,7 +1699,7 @@ async def _maybe_verify(
     # question so verifier checks the draft against accumulated user
     # corrections (`/lesson` slash command writes here). verifier runs in
     # meta_work_dir for echo-chamber isolation, so it doesn't auto-load
-    # spring_billing/knowledge/lessons.md — we explicitly fold it into the
+    # example_project/knowledge/lessons.md — we explicitly fold it into the
     # prompt instead.
     verifier_question = _maybe_inject_lessons(project_cfg, question)
 
@@ -1734,7 +1734,7 @@ def _admin_at_mentions(admin_users: list[str]) -> str:
 
     ``<at id="ou_xxx"></at>`` is auto-rendered by Feishu into the user's
     display name and pushes a notification — so a 线上 approval card pings
-    the admin (e.g. @王佳磊) without us needing their name string. Falls back
+    the admin (e.g. @管理员) without us needing their name string. Falls back
     to plain '管理员' when no admin open_id is configured.
     """
     mentions = " ".join(f'<at id="{uid}"></at>' for uid in admin_users if uid)
@@ -2520,13 +2520,13 @@ def main() -> int:
     )
 
     parser = argparse.ArgumentParser(
-        prog="digital-agent",
+        prog="agent-runtime",
         description="Feishu digital agent framework runtime",
     )
     parser.add_argument(
         "--version",
         action="version",
-        version="digital-agent 0.1.0",
+        version="agent-runtime 0.1.0",
     )
     parser.add_argument(
         "--config",

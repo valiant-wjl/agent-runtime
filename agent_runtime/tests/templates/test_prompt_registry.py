@@ -1,4 +1,4 @@
-"""PromptHub MVP for digital-agent: enforce that every TRACKED_PROMPTS template
+"""PromptHub MVP for agent-runtime: enforce that every TRACKED_PROMPTS template
 has its current sha256 logged in prompts/REGISTRY.md. Mirrors the fixer-side
 test (issue-driven-fixer/tests/test_prompt_registry.py); same schema, same
 error message format.

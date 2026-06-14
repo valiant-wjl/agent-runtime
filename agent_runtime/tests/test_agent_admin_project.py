@@ -45,7 +45,7 @@ def _cfg(work_dir: Path) -> dict:
     return {
         "version": 1,
         "channels": {"feishu": {"enabled": True}},
-        "projects": {"spring_billing": _project_cfg(work_dir)},
+        "projects": {"example_project": _project_cfg(work_dir)},
         "runtime": {"session_file": "./.state/sessions.json"},
     }
 
@@ -108,10 +108,10 @@ async def test_dispatch_project_list(tmp_path):
     ctx = _StubCtx(cfg=cfg, config_path=tmp_path / "config.yaml",
                    backup_dir=tmp_path / "bak")
     await agent_admin.dispatch(
-        parsed, cfg["projects"]["spring_billing"], cfg, channel, ctx,
+        parsed, cfg["projects"]["example_project"], cfg, channel, ctx,
     )
     body = channel.reply.await_args.args[1]
-    assert "spring_billing" in body
+    assert "example_project" in body
     assert "oc_existing" in body
     # list is read-only — nothing staged
     assert agent_pending.get(agent_admin._thread_key(parsed)) is None
@@ -131,7 +131,7 @@ async def test_dispatch_project_add_stages_pending(tmp_path, monkeypatch):
     monkeypatch.setattr(agent_admin, "_list_bot_chats", fake_list_bot_chats)
 
     await agent_admin.dispatch(
-        parsed, cfg["projects"]["spring_billing"], cfg, channel, ctx,
+        parsed, cfg["projects"]["example_project"], cfg, channel, ctx,
     )
     body = channel.reply.await_args.args[1]
     assert "[APPROVAL_REQUIRED]" in body
@@ -159,7 +159,7 @@ async def test_dispatch_project_add_group_not_found(tmp_path, monkeypatch):
     monkeypatch.setattr(agent_admin, "_list_bot_chats", fake_list_bot_chats)
 
     await agent_admin.dispatch(
-        parsed, cfg["projects"]["spring_billing"], cfg, channel, ctx,
+        parsed, cfg["projects"]["example_project"], cfg, channel, ctx,
     )
     body = channel.reply.await_args.args[1]
     assert "bot 不在该群或群名不符" in body
@@ -183,7 +183,7 @@ async def test_dispatch_project_add_multiple_candidates(tmp_path, monkeypatch):
     monkeypatch.setattr(agent_admin, "_list_bot_chats", fake_list_bot_chats)
 
     await agent_admin.dispatch(
-        parsed, cfg["projects"]["spring_billing"], cfg, channel, ctx,
+        parsed, cfg["projects"]["example_project"], cfg, channel, ctx,
     )
     body = channel.reply.await_args.args[1]
     assert "oc_a" in body and "oc_b" in body
@@ -199,7 +199,7 @@ async def test_dispatch_project_add_denied_for_non_admin(tmp_path):
     ctx = _StubCtx(cfg=cfg, config_path=tmp_path / "config.yaml",
                    backup_dir=tmp_path / "bak")
     await agent_admin.dispatch(
-        parsed, cfg["projects"]["spring_billing"], cfg, channel, ctx,
+        parsed, cfg["projects"]["example_project"], cfg, channel, ctx,
     )
     body = channel.reply.await_args.args[1]
     assert "Permission denied" in body or "🚫" in body
@@ -208,19 +208,19 @@ async def test_dispatch_project_add_denied_for_non_admin(tmp_path):
 @pytest.mark.asyncio
 async def test_dispatch_project_rm_stages_pending(tmp_path):
     cfg = _cfg(tmp_path)
-    parsed = _msg("/agent project rm spring_billing")
+    parsed = _msg("/agent project rm example_project")
     channel = AsyncMock()
     ctx = _StubCtx(cfg=cfg, config_path=tmp_path / "config.yaml",
                    backup_dir=tmp_path / "bak")
     await agent_admin.dispatch(
-        parsed, cfg["projects"]["spring_billing"], cfg, channel, ctx,
+        parsed, cfg["projects"]["example_project"], cfg, channel, ctx,
     )
     body = channel.reply.await_args.args[1]
     assert "[APPROVAL_REQUIRED]" in body
     p = agent_pending.get(agent_admin._thread_key(parsed))
     assert p is not None
     assert p.action == "project_rm"
-    assert p.payload == {"name": "spring_billing"}
+    assert p.payload == {"name": "example_project"}
 
 
 @pytest.mark.asyncio
@@ -231,7 +231,7 @@ async def test_dispatch_project_rm_unknown(tmp_path):
     ctx = _StubCtx(cfg=cfg, config_path=tmp_path / "config.yaml",
                    backup_dir=tmp_path / "bak")
     await agent_admin.dispatch(
-        parsed, cfg["projects"]["spring_billing"], cfg, channel, ctx,
+        parsed, cfg["projects"]["example_project"], cfg, channel, ctx,
     )
     body = channel.reply.await_args.args[1]
     assert "未找到" in body
@@ -295,12 +295,12 @@ async def test_apply_pending_project_rm(tmp_path, monkeypatch):
 
     pending = agent_pending.Pending(
         thread_key="k", action="project_rm",
-        payload={"name": "spring_billing"},
+        payload={"name": "example_project"},
         sender_id="u_admin",
     )
     await agent_admin.apply_pending(parsed, pending, cfg, channel, ctx)
 
-    assert calls["rm"] == "spring_billing"
+    assert calls["rm"] == "example_project"
     assert len(ctx.restart_consume_calls) == 1
 
 

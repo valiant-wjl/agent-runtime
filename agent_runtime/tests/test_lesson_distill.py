@@ -94,7 +94,7 @@ def test_validate_rejects_dropped_section():
 
 def _setup_dirs(tmp_path, soul=_SOUL, lessons=_LESSONS_WITH_ENTRIES):
     meta = tmp_path / "meta"
-    work = tmp_path / "spring_billing"
+    work = tmp_path / "example_project"
     (meta).mkdir()
     (work / "knowledge").mkdir(parents=True)
     (meta / "SOUL.md").write_text(soul, encoding="utf-8")
@@ -115,7 +115,7 @@ async def test_distill_once_noop_when_no_lessons(tmp_path):
         return True
 
     res = await lesson_distill.distill_once(
-        project_name="spring_billing",
+        project_name="example_project",
         project_cfg={"work_dir": str(work)},
         meta_work_dir=str(meta),
         run_fn=run_fn,
@@ -143,7 +143,7 @@ async def test_distill_once_happy_path_writes_soul_backs_up_and_resets(tmp_path)
         return True
 
     res = await lesson_distill.distill_once(
-        project_name="spring_billing",
+        project_name="example_project",
         project_cfg={"work_dir": str(work)},
         meta_work_dir=str(meta),
         run_fn=run_fn,
@@ -163,7 +163,7 @@ async def test_distill_once_happy_path_writes_soul_backs_up_and_resets(tmp_path)
         (work / "knowledge" / "lessons.md").read_text()
     ) == 0
     # user notified
-    assert notes and "spring_billing" in notes[0]
+    assert notes and "example_project" in notes[0]
 
 
 @pytest.mark.asyncio
@@ -183,7 +183,7 @@ async def test_distill_once_preserves_lessons_added_during_call(tmp_path):
         return True
 
     res = await lesson_distill.distill_once(
-        project_name="spring_billing",
+        project_name="example_project",
         project_cfg={"work_dir": str(work)},
         meta_work_dir=str(meta),
         run_fn=run_fn,
@@ -213,7 +213,7 @@ async def test_distill_once_invalid_output_preserves_lessons(tmp_path):
         return True
 
     res = await lesson_distill.distill_once(
-        project_name="spring_billing",
+        project_name="example_project",
         project_cfg={"work_dir": str(work)},
         meta_work_dir=str(meta),
         run_fn=run_fn,
@@ -240,7 +240,7 @@ async def test_distill_once_llm_error_preserves_lessons(tmp_path):
         return True
 
     res = await lesson_distill.distill_once(
-        project_name="spring_billing",
+        project_name="example_project",
         project_cfg={"work_dir": str(work)},
         meta_work_dir=str(meta),
         run_fn=run_fn,

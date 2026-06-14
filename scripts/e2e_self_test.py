@@ -71,7 +71,7 @@ class CaptureChannel:
 def _make_parsed(text: str, chat_id: str, is_alert: bool) -> ParsedMsg:
     msg_id = f"om_e2e_{secrets.token_hex(6)}"
     sender_type = "app" if is_alert else "user"
-    sender_id = "ou_e2e_sender" if not is_alert else "ou_a2c36fa66c759e28e14c92da49978a83"
+    sender_id = "ou_e2e_sender" if not is_alert else "ou_REPLACE_ME"
     raw_msg_type = "interactive" if is_alert else "text"
     return ParsedMsg(
         channel="feishu",

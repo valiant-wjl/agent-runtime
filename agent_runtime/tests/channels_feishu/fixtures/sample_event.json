@@ -3,7 +3,7 @@
     "header": {
         "event_id": "e6c23d035c0f3b9e87bf6eee4c62c5bd",
         "event_type": "im.message.receive_v1",
-        "app_id": "cli_a94255dd4778dccc",
+        "app_id": "cli_app_placeholder",
         "tenant_key": "736588c9260f175d",
         "create_time": "1774859350519",
         "token": ""
@@ -17,7 +17,7 @@
             "mentions": [
                 {
                     "id": {
-                        "open_id": "ou_62d5cd3d46713fa1ba3272b0796cd6b0",
+                        "open_id": "ou_placeholder_a",
                         "union_id": "on_9d74445f1e75764beb12fae80d418ee8",
                         "user_id": null
                     },
@@ -32,7 +32,7 @@
         },
         "sender": {
             "sender_id": {
-                "open_id": "ou_57573843aaeaa7cb3c3146b58ce8cd62",
+                "open_id": "ou_placeholder_b",
                 "union_id": "on_809c3c612bc374fbf516d298b5f1a745",
                 "user_id": null
             },

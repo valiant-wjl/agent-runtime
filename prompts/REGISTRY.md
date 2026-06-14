@@ -1,4 +1,4 @@
-# Prompts Registry — digital-agent
+# Prompts Registry — agent-runtime
 
 This file is the **single source of truth** for every LLM-facing template
 in this repo. Every edit MUST update the corresponding entry below in the

@@ -1,4 +1,4 @@
-"""digital-agent runtime package.
+"""digital agent runtime package.
 
 This package contains the core scheduling and orchestration logic
 for the Feishu digital agent framework.

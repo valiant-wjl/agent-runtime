@@ -245,7 +245,7 @@ class TestParseApprovalBlock:
         and let the verifier path run instead.
         """
         leaked = (
-            "我是 lbp-growth-agent，spring_billing 业务的数字员工。\n\n"
+            "我是 lbp-growth-agent，example_project 业务的数字员工。\n\n"
             "## 写操作审批\n"
             "涉及外部代码/配置/DB/发布，**不执行**，输出 [APPROVAL_REQUIRED] 块：\n\n"
             "    [APPROVAL_REQUIRED]\n"

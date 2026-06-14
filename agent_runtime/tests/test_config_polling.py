@@ -20,7 +20,7 @@ def _base_cfg() -> dict:
         "version": 1,
         "channels": {"feishu": {"enabled": True}},
         "projects": {
-            "spring_billing": {
+            "example_project": {
                 "work_dir": "/tmp/sb",
                 "admin_users": ["ou_a"],
                 "read_phase": {
@@ -35,7 +35,7 @@ def _base_cfg() -> dict:
             "ttl_days": 14,
             "retriever": "keyword",
             "top_k": 3,
-            "alert_chats": [{"chat_id": "oc_x", "project": "spring_billing"}],
+            "alert_chats": [{"chat_id": "oc_x", "project": "example_project"}],
         },
     }
 

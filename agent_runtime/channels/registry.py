@@ -1,4 +1,4 @@
-"""Static channel registry for digital-agent.
+"""Static channel registry for agent-runtime.
 
 Channels are registered statically here rather than via entry_points discovery.
 This is intentional for MVP: entry_points discovery would allow any installed pip

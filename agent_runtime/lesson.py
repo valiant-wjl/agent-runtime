@@ -33,8 +33,8 @@ _PREFIX = "/lesson"
 _HEADER = """\
 # Lessons learned
 
-每次 agent 答错时，王佳磊在飞书发 `/lesson <内容>` 追加到这里。
-agent 启动时通过 spring_billing/CLAUDE.md 引用本文件作为指令。
+每次 agent 答错时，管理员在飞书发 `/lesson <内容>` 追加到这里。
+agent 启动时通过 example_project/CLAUDE.md 引用本文件作为指令。
 积累足够多后人工 review，把模式提炼到 SOUL.md / EVERGREEN.md。
 """
 

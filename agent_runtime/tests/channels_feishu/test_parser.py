@@ -16,7 +16,7 @@ def test_parse_text_message():
     assert parsed is not None
     assert parsed.message_id == "om_x100b53970b92d4b8b2ccdf82de630c5"
     assert parsed.chat_id == "oc_a879bbae4d9941a7852b03302500b12f"
-    assert parsed.sender_id == "ou_57573843aaeaa7cb3c3146b58ce8cd62"
+    assert parsed.sender_id == "ou_placeholder_b"
     # mention prefix "@_user_1 " should be stripped, leaving "hello"
     assert parsed.text == "hello"
     assert hasattr(parsed, "text")
