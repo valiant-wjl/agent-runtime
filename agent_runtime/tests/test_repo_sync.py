@@ -61,6 +61,61 @@ async def test_sync_one_dirty_tree_skipped(tmp_path):
 
 
 @pytest.mark.asyncio
+async def test_sync_one_dirty_tree_stash_enabled_pulls(tmp_path):
+    """Dirty tree + stash_dirty=True -> stash push, pull, stash pop."""
+    work_dir = tmp_path / "project"
+    work_dir.mkdir()
+    (work_dir / ".git").mkdir()
+
+    spawn_calls = []
+
+    async def fake_spawn(*args, **kwargs):
+        spawn_calls.append(args)
+        mock = AsyncMock()
+        if "status" in args:
+            mock.communicate = AsyncMock(return_value=(b" M f.py\n", b""))
+        else:  # stash push / pull / stash pop
+            mock.communicate = AsyncMock(return_value=(b"", b""))
+        mock.returncode = 0
+        return mock
+
+    with patch("asyncio.create_subprocess_exec", side_effect=fake_spawn):
+        result = await repo_sync._sync_one("proj1", work_dir, stash_dirty=True)
+    assert result is True
+    # status + stash push + pull + stash pop = 4 calls
+    assert len(spawn_calls) == 4
+    assert any("stash" in a and "push" in a for a in spawn_calls)
+    assert any("pull" in a for a in spawn_calls)
+    assert any("stash" in a and "pop" in a for a in spawn_calls)
+
+
+@pytest.mark.asyncio
+async def test_sync_one_dirty_tree_stash_pop_conflict_not_abort(tmp_path):
+    """stash pop returning non-zero (conflict) is logged, not raised."""
+    work_dir = tmp_path / "project"
+    work_dir.mkdir()
+    (work_dir / ".git").mkdir()
+
+    async def fake_spawn(*args, **kwargs):
+        mock = AsyncMock()
+        if "status" in args:
+            mock.communicate = AsyncMock(return_value=(b" M f.py\n", b""))
+            mock.returncode = 0
+        elif "pop" in args:
+            mock.communicate = AsyncMock(return_value=(b"", b"CONFLICT\n"))
+            mock.returncode = 1
+        else:  # stash push / pull
+            mock.communicate = AsyncMock(return_value=(b"", b""))
+            mock.returncode = 0
+        return mock
+
+    with patch("asyncio.create_subprocess_exec", side_effect=fake_spawn):
+        # must not raise despite pop conflict
+        result = await repo_sync._sync_one("proj1", work_dir, stash_dirty=True)
+    assert result is True
+
+
+@pytest.mark.asyncio
 async def test_sync_one_pull_failure_not_abort(tmp_path):
     """git pull 非零退出 -> log warning，不抛异常，返回 True（pull 执行了但失败）."""
     work_dir = tmp_path / "project"

@@ -31,7 +31,38 @@ def _git_env() -> dict[str, str]:
     return env
 
 
-async def sync_loop(projects: dict, interval_seconds: int = 3600) -> None:
+async def _run_git(
+    args: list[str], cwd: Path, timeout: int = 60
+) -> tuple[int, bytes, bytes] | None:
+    """Run ``git <args>`` in ``cwd`` with proxy-cleared env.
+
+    Returns ``(returncode, stdout, stderr)``, or ``None`` if the call timed
+    out (the process is killed in that case).
+    """
+    proc = await asyncio.create_subprocess_exec(
+        "git", *args,
+        cwd=str(cwd),
+        env=_git_env(),
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+    )
+    try:
+        stdout, stderr = await asyncio.wait_for(
+            proc.communicate(), timeout=timeout
+        )
+    except (asyncio.TimeoutError, TimeoutError):
+        proc.kill()
+        try:
+            await asyncio.wait_for(proc.wait(), timeout=5)
+        except (asyncio.TimeoutError, TimeoutError):
+            pass
+        return None
+    return proc.returncode, stdout, stderr
+
+
+async def sync_loop(
+    projects: dict, interval_seconds: int = 3600, stash_dirty: bool = False
+) -> None:
     """Loop: every interval, sync each project (legacy single or multi-repo)."""
     while True:
         for name, cfg in projects.items():
@@ -40,7 +71,9 @@ async def sync_loop(projects: dict, interval_seconds: int = 3600) -> None:
                 continue
             repos = cfg.get("repos")
             try:
-                await _sync_one(name, Path(work_dir), repos=repos)
+                await _sync_one(
+                    name, Path(work_dir), repos=repos, stash_dirty=stash_dirty
+                )
             except asyncio.CancelledError:
                 raise
             except Exception:
@@ -51,33 +84,46 @@ async def sync_loop(projects: dict, interval_seconds: int = 3600) -> None:
             raise
 
 
-async def sync_once(name: str, work_dir: Path, repos: list | None = None) -> bool:
+async def sync_once(
+    name: str,
+    work_dir: Path,
+    repos: list | None = None,
+    stash_dirty: bool = False,
+) -> bool:
     """Public: sync a single project once. Wraps _sync_one.
 
     ``repos`` is the optional US-005 multi-repo config: a list of
     ``{"name": "<repo>", "url": "<git-remote>"}`` dicts. When given,
     work_dir/.git is ignored and each repo is synced under
     work_dir/repos/<name>/. When None, falls back to legacy single-repo
-    semantics. Returns True if at least one pull/clone ran (even on
+    semantics. ``stash_dirty`` controls dirty-tree handling (see
+    ``_pull_repo``). Returns True if at least one pull/clone ran (even on
     failure); False if everything was skipped.
     """
-    return await _sync_one(name, work_dir, repos=repos)
+    return await _sync_one(
+        name, work_dir, repos=repos, stash_dirty=stash_dirty
+    )
 
 
 async def _sync_one(
-    name: str, work_dir: Path, repos: list | None = None
+    name: str,
+    work_dir: Path,
+    repos: list | None = None,
+    stash_dirty: bool = False,
 ) -> bool:
     """Sync one project. See module docstring for the two modes."""
     if repos:
-        return await _sync_multi(name, work_dir, repos)
+        return await _sync_multi(name, work_dir, repos, stash_dirty=stash_dirty)
     # Legacy single-repo path: work_dir itself is a git repo.
     if not work_dir.exists() or not (work_dir / ".git").exists():
         log.debug("repo_sync: %s not a git repo, skipping", work_dir)
         return False
-    return await _pull_repo(name, work_dir)
+    return await _pull_repo(name, work_dir, stash_dirty=stash_dirty)
 
 
-async def _sync_multi(name: str, work_dir: Path, repos: list) -> bool:
+async def _sync_multi(
+    name: str, work_dir: Path, repos: list, stash_dirty: bool = False
+) -> bool:
     """Iterate repos[]; clone missing ones, pull existing ones.
 
     Per-repo failures are logged but do not abort the loop. Returns True
@@ -107,7 +153,9 @@ async def _sync_multi(name: str, work_dir: Path, repos: list) -> bool:
             if not (target / ".git").exists():
                 executed = await _clone_repo(name, rname, url, target)
             else:
-                executed = await _pull_repo(f"{name}/{rname}", target)
+                executed = await _pull_repo(
+                    f"{name}/{rname}", target, stash_dirty=stash_dirty
+                )
         except asyncio.CancelledError:
             raise
         except Exception:
@@ -159,63 +207,71 @@ async def _clone_repo(
     return True
 
 
-async def _pull_repo(name: str, work_dir: Path) -> bool:
+async def _pull_repo(
+    name: str, work_dir: Path, stash_dirty: bool = False
+) -> bool:
     """Status-check + git pull --ff-only on a single git work tree.
 
-    - Skip (and log.info) if `git status --porcelain` shows dirty tree
-    - Try `git pull --ff-only`; non-zero -> log warning (no raise)
+    Dirty-tree handling depends on ``stash_dirty``:
+
+    - ``False`` (default): skip (and log.info) when `git status --porcelain`
+      shows a dirty tree — never touch local changes.
+    - ``True``: ``git stash push -u`` (incl. untracked) before the pull, then
+      ``git stash pop`` after, so the repo still fast-forwards while local
+      edits are preserved. A pop conflict is logged loudly; the changes stay
+      retrievable via ``git stash list``.
+
+    Then `git pull --ff-only`; non-zero -> log warning (no raise).
     Returns True if pull ran (even if failed), False if skipped.
     """
     # dirty tree check
-    proc = await asyncio.create_subprocess_exec(
-        "git", "status", "--porcelain",
-        cwd=str(work_dir),
-        env=_git_env(),
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-    )
-    try:
-        stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=60)
-    except (asyncio.TimeoutError, TimeoutError):
-        proc.kill()
-        try:
-            await asyncio.wait_for(proc.wait(), timeout=5)
-        except (asyncio.TimeoutError, TimeoutError):
-            pass
+    res = await _run_git(["status", "--porcelain"], work_dir)
+    if res is None:
         log.warning("repo_sync: git status timeout for %s", name)
         return False
-    if proc.returncode != 0:
+    rc, stdout, _ = res
+    if rc != 0:
         log.warning("repo_sync: git status failed for %s", name)
         return False
+
+    stashed = False
     if stdout.strip():
-        log.info("repo_sync: %s has dirty tree, skipping pull", name)
-        return False
+        if not stash_dirty:
+            log.info("repo_sync: %s has dirty tree, skipping pull", name)
+            return False
+        # stash local changes (incl. untracked) so the pull can fast-forward
+        sres = await _run_git(
+            ["stash", "push", "-u", "-m", "repo_sync autostash"], work_dir
+        )
+        if sres is None or sres[0] != 0:
+            log.warning("repo_sync: %s stash failed, skipping pull", name)
+            return False
+        stashed = True
+        log.info("repo_sync: %s stashed dirty tree before pull", name)
 
     # pull (use --ff-only to avoid main/master branch mismatch;
     # relies on tracking branch configured in the repo)
-    proc = await asyncio.create_subprocess_exec(
-        "git", "pull", "--ff-only",
-        cwd=str(work_dir),
-        env=_git_env(),
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-    )
-    try:
-        _, stderr = await asyncio.wait_for(proc.communicate(), timeout=60)
-    except (asyncio.TimeoutError, TimeoutError):
-        proc.kill()
-        try:
-            await asyncio.wait_for(proc.wait(), timeout=5)
-        except (asyncio.TimeoutError, TimeoutError):
-            pass
+    pres = await _run_git(["pull", "--ff-only"], work_dir)
+    if pres is None:
         log.warning("repo_sync: git pull --ff-only timeout for %s", name)
-        return True  # pull 执行了但挂住
-    if proc.returncode != 0:
+    elif pres[0] != 0:
         log.warning(
             "repo_sync: git pull --ff-only failed for %s: %s",
             name,
-            stderr.decode(errors="replace")[:200],
+            pres[2].decode(errors="replace")[:200],
         )
     else:
         log.info("repo_sync: %s pulled (ff-only)", name)
+
+    # restore stashed changes
+    if stashed:
+        popres = await _run_git(["stash", "pop"], work_dir)
+        if popres is None or popres[0] != 0:
+            log.error(
+                "repo_sync: %s stash pop conflict — local changes preserved "
+                "in `git stash list`, resolve manually",
+                name,
+            )
+        else:
+            log.info("repo_sync: %s restored stashed changes", name)
     return True

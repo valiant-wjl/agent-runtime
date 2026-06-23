@@ -2402,6 +2402,7 @@ async def run_forever(cfg: dict) -> None:
             repo_sync.sync_loop(
                 cfg["projects"],
                 interval_seconds=repo_sync_cfg.get("interval_seconds", 3600),
+                stash_dirty=repo_sync_cfg.get("stash_dirty", False),
             ),
             name="repo-sync",
         ))
